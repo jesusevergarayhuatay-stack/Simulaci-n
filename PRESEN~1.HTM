@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulación Ciclo de Compras · ACL BEST COMPANY · Grupo 6 UTP</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --navy:#00305e; --navy2:#0057b8; --blue:#0072ce; --sky:#e8f1fb; --sky2:#d3e6fa;
+  --gold:#f2a900; --gold-dim:#fff4dc;
+  --green:#1a9e57; --green-dim:#e3f6ec;
+  --red:#d6293e; --red-dim:#fdeaec;
+  --amber:#e08600; --amber-dim:#fdf1de;
+  --ink:#132539; --ink2:#4a5a6a; --ink3:#8494a4;
+  --line:#dbe4ee; --line2:#c3d2e2;
+  --bg:#f4f7fb; --card:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+
+.deck{height:100vh;width:100vw;position:relative}
+.slide{position:absolute;inset:0;padding:42px 58px 74px;display:none;flex-direction:column;animation:fade .45s ease;overflow:hidden}
+.slide.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.s-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--navy2);background:var(--sky);border:1px solid var(--sky2);padding:5px 13px;border-radius:20px;align-self:flex-start;margin-bottom:12px}
+.s-title{font-size:30px;font-weight:800;line-height:1.12;color:var(--navy);letter-spacing:-.4px;margin-bottom:6px}
+.s-sub{font-size:14.5px;color:var(--ink2);margin-bottom:18px;max-width:1000px;line-height:1.5}
+.s-body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
+.slide.fit .s-body{justify-content:center}
+
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 19px;box-shadow:0 1px 3px rgba(19,37,57,.04)}
+.card h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.card p,.card li{font-size:13.5px;color:var(--ink2);line-height:1.55}
+.card ul{padding-left:18px;margin-top:4px}
+.card ul li{margin-bottom:5px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+.c-blue{background:var(--sky);color:var(--navy2)}
+.c-green{background:var(--green-dim);color:var(--green)}
+.c-red{background:var(--red-dim);color:var(--red)}
+.c-gold{background:var(--gold-dim);color:var(--amber)}
+b,strong{color:var(--ink);font-weight:700}
+
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 17px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--navy2)}
+.stat.r::before{background:var(--red)} .stat.g::before{background:var(--green)} .stat.a::before{background:var(--gold)}
+.stat .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3)}
+.stat .v{font-size:28px;font-weight:800;line-height:1.05;margin:5px 0 2px;color:var(--navy);font-variant-numeric:tabular-nums}
+.stat.r .v{color:var(--red)} .stat.g .v{color:var(--green)} .stat.a .v{color:var(--amber)}
+.stat .d{font-size:12px;color:var(--ink2)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--navy);color:#fff;font-weight:700;padding:9px 11px;text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+thead th:first-child{border-radius:8px 0 0 0}thead th:last-child{border-radius:0 8px 0 0}
+tbody td{padding:8px 11px;border-bottom:1px solid var(--line)}
+tbody tr:nth-child(even){background:#f7fafd}
+tbody tr:hover{background:var(--sky)}
+.t-num{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.t-red{color:var(--red);font-weight:700}.t-green{color:var(--green);font-weight:700}.t-navy{color:var(--navy);font-weight:700}
+
+.chart-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 17px;display:flex;flex-direction:column}
+.chart-box h4{font-size:13.5px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.chart-canvas{position:relative;flex:1;min-height:0}
+
+.lane{display:grid;grid-template-columns:148px 1fr;border:1px solid var(--line2);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.lane-h{background:var(--navy);color:#fff;font-size:12px;font-weight:700;padding:9px 12px;display:flex;align-items:center;gap:8px}
+.lane-b{padding:8px 12px;display:flex;flex-wrap:wrap;gap:7px;align-items:center;background:var(--card)}
+.node{font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:8px;background:var(--sky);color:var(--navy2);border:1px solid var(--sky2);white-space:nowrap}
+.node.dec{background:var(--gold-dim);color:var(--amber);border-color:#f6dca0;border-radius:20px}
+.node.wait{background:var(--red-dim);color:var(--red);border-color:#f6c9ce}
+.arrow{color:var(--ink3);font-size:11px}
+
+.ishi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.fish-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.bone{border:1px solid var(--line2);border-radius:10px;padding:11px 13px;background:#fbfdff}
+.bone h5{font-size:12.5px;font-weight:800;color:#fff;background:var(--navy2);display:inline-block;padding:3px 10px;border-radius:6px;margin-bottom:8px}
+.bone.m2 h5{background:var(--blue)} .bone.m3 h5{background:var(--gold);color:#4a3400}
+.bone.m4 h5{background:var(--green)} .bone.m5 h5{background:var(--red)} .bone.m6 h5{background:var(--navy)}
+.bone ul{padding-left:15px}
+.bone li{font-size:11.8px;color:var(--ink2);line-height:1.45;margin-bottom:4px}
+.effect-box{background:var(--red);color:#fff;border-radius:12px;padding:12px 18px;text-align:center;font-weight:800;font-size:14px;margin-top:12px;box-shadow:0 4px 14px rgba(214,41,62,.25)}
+
+.callout{border-left:4px solid var(--gold);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;font-size:13.5px;color:var(--ink);line-height:1.5}
+.callout.g{border-color:var(--green);background:var(--green-dim)}
+.callout.r{border-color:var(--red);background:var(--red-dim)}
+.callout.b{border-color:var(--navy2);background:var(--sky)}
+
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step .n{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.step .tx{font-size:13px;color:var(--ink2);line-height:1.45;padding-top:3px}
+.step .tx b{color:var(--navy)}
+
+/* IMG SLOT */
+.imgslot{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff;min-height:170px;display:flex}
+.imgslot img{width:100%;height:100%;object-fit:cover;display:block}
+.imgph{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:repeating-linear-gradient(45deg,#f2f6fb,#f2f6fb 12px,#eaf1f9 12px,#eaf1f9 24px);color:var(--ink3);text-align:center;padding:18px}
+.imgph i{font-size:30px;color:var(--navy2);opacity:.55}
+.imgph b{color:var(--navy);font-size:13px}
+.imgph span{font-size:11.5px;line-height:1.5;max-width:260px}
+.imgph code{background:var(--sky);color:var(--navy2);padding:1px 6px;border-radius:5px;font-size:11px}
+
+/* MARCAS */
+.brands{display:flex;gap:10px;flex-wrap:wrap}
+.brand{font-size:13px;font-weight:800;letter-spacing:.3px;padding:8px 16px;border-radius:10px;border:1px solid var(--line2);background:#fff;color:var(--navy)}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;height:54px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;z-index:30}
+.nav-l{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink2)}
+.nav-logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.nav-c{display:flex;align-items:center;gap:8px}
+.nav-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);background:#fff;color:var(--navy);cursor:pointer;font-size:14px;transition:.15s;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+.nav-count{font-size:13px;font-weight:700;color:var(--navy);min-width:58px;text-align:center;font-variant-numeric:tabular-nums}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--navy2),var(--gold));z-index:40;transition:width .35s ease}
+.dots{display:flex;gap:5px;flex-wrap:wrap;max-width:46vw;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--line2);cursor:pointer;transition:.15s}
+.dot.active{background:var(--navy2);transform:scale(1.3)}
+
+.cover{align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 50% 0%,#eaf2fc 0%,#f4f7fb 60%)}
+.cover-badge{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy2)}
+.cover-logo{width:74px;height:74px;border-radius:20px;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;margin:16px auto 20px;box-shadow:0 12px 30px rgba(0,87,184,.3)}
+.cover h1{font-size:34px;font-weight:800;color:var(--navy);line-height:1.15;max-width:960px;letter-spacing:-.6px}
+.cover .lead{font-size:16px;color:var(--ink2);margin-top:14px;max-width:760px;line-height:1.55}
+.cover .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+.cover .team{margin-top:26px;display:flex;gap:9px;flex-wrap:wrap;justify-content:center;max-width:820px}
+.cover .team .t{font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 14px;color:var(--ink);font-weight:600}
+.pill{font-size:12.5px;font-weight:700;padding:7px 15px;border-radius:22px}
+
+/* ── CARÁTULA ACADÉMICA SOBRIA ── */
+.cover-academic{align-items:center;justify-content:center;background:#eef3f9;padding:26px}
+.sheet{width:min(940px,94%);max-height:100%;background:#fff;border:1px solid var(--line);border-top:5px solid var(--navy);border-radius:8px;padding:38px 56px 30px;text-align:center;box-shadow:0 12px 44px rgba(0,48,94,.10);overflow:auto}
+.sheet-top{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px}
+.utp-svg{height:78px;width:auto;max-width:100%;display:block}
+.inst-fac{font-size:13px;color:var(--ink2);font-weight:600}
+.sheet-rule{height:1px;background:var(--line2);margin:16px 0}
+.sheet-course{font-size:12.5px;font-weight:700;letter-spacing:.6px;color:var(--navy2);text-transform:uppercase}
+.sheet-plabel{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:800;margin-top:14px}
+.sheet-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.32;color:var(--navy);font-weight:700;margin:8px auto 0;max-width:780px}
+.sheet-people{display:flex;justify-content:center;gap:56px;text-align:center;flex-wrap:wrap}
+.cp-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink3);font-weight:700;margin-bottom:8px}
+.cp-val{font-size:14px;color:var(--ink);font-weight:600}
+.cp-names{font-size:12.8px;color:var(--ink2);line-height:1.75;text-align:left}
+.sheet-foot{margin-top:18px;font-size:12px;color:var(--ink3);letter-spacing:.5px}
+
+.tag-va{color:var(--green);font-weight:700}.tag-nva{color:var(--red);font-weight:700}
+.sym{font-family:monospace;font-size:14px;font-weight:700;color:var(--navy2)}
+.mini{font-size:11.5px;color:var(--ink3)}
+
+/* SCENARIO TOGGLE */
+.seg{display:inline-flex;background:#eef4fb;border:1px solid var(--line2);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink2);padding:8px 16px;border-radius:9px;cursor:pointer;transition:.18s}
+.seg button.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(19,37,57,.12)}
+.seg button.active[data-k=asis]{color:var(--red)} .seg button.active[data-k=real]{color:var(--amber)} .seg button.active[data-k=opt]{color:var(--green)}
+
+/* MATCH ANIMATION */
+.match-sim{background:#0d2236;border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;color:#cfe0f0}
+.match-sim h4{color:#fff;font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.track{position:relative;height:52px;margin-bottom:6px}
+.track-label{position:absolute;left:0;top:-2px;font-size:10.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.lane-line{position:absolute;left:0;right:120px;top:26px;height:2px;background:rgba(255,255,255,.12)}
+.gate{position:absolute;right:96px;top:6px;bottom:6px;width:3px;background:var(--gold);border-radius:2px;box-shadow:0 0 10px rgba(242,169,0,.6)}
+.gate-txt{position:absolute;right:0;top:12px;width:90px;font-size:10px;text-align:center;color:var(--gold);font-weight:700;line-height:1.3}
+.ent{position:absolute;top:16px;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.ent.doc{background:var(--blue);color:#fff}
+.ent.box{background:#f0a500;color:#3a2a00;border-radius:4px}
+.mout{position:absolute;top:16px;width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.msent{position:absolute;bottom:14px;right:16px;font-size:11px;color:#9fb6cc}
+.msent b{color:#fff}
+
+/* ERP DEMO */
+.erp-frame{width:100%;height:100%;border:1px solid var(--line2);border-radius:14px;background:#0d1117;box-shadow:0 8px 30px rgba(0,48,94,.18)}
+.demo-bar{display:flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:7px 14px;border-radius:10px 10px 0 0;font-size:12px;font-weight:600}
+.demo-dot{width:9px;height:9px;border-radius:50%}
+.dgr{background:#3fb950}.dye{background:#f2a900}.drd{background:#f85149}
+
+/* ROI SLIDER */
+.slider-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.slider-wrap label{font-size:12.5px;font-weight:700;color:var(--navy);display:flex;justify-content:space-between;margin-bottom:10px}
+input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
+.slider-val{font-size:15px;color:var(--red);font-weight:800}
+
+.hl{background:linear-gradient(transparent 60%,var(--gold-dim) 60%);font-weight:700;color:var(--ink)}
+@media(max-width:1100px){.slide{padding:30px 30px 70px}.s-title{font-size:24px}.g4{grid-template-columns:1fr 1fr}.fish-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<!-- 1 · PORTADA (académica sobria) -->
+<section class="slide cover-academic active">
+  <div class="sheet">
+    <div class="sheet-top">
+      <svg class="utp-svg" viewBox="0 0 372 94" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Universidad Tecnológica del Perú">
+        <rect x="0" y="15" width="64" height="64" fill="#C8102E"/>
+        <rect x="64" y="15" width="64" height="64" fill="#17110f"/>
+        <rect x="128" y="15" width="64" height="64" fill="#C8102E"/>
+        <text x="32" y="62" text-anchor="middle" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="43" fill="#fff">U</text>
+        <text x="96" y="62" text-anchor="middle" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="43" fill="#fff">T</text>
+        <text x="160" y="62" text-anchor="middle" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="43" fill="#fff">P</text>
+        <text x="208" y="34" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="20.5" fill="#17110f">Universidad</text>
+        <text x="208" y="57" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="20.5" fill="#17110f">Tecnológica</text>
+        <text x="208" y="80" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="20.5" fill="#17110f">del Perú</text>
+      </svg>
+      <div class="inst-fac">Facultad de Ingeniería Industrial y de Sistemas</div>
+    </div>
+
+    <div class="sheet-rule"></div>
+    <div class="sheet-course">Curso de Simulación &nbsp;·&nbsp; Sección 37169 &nbsp;·&nbsp; Grupo 6</div>
+
+    <div class="sheet-plabel">Proyecto Final</div>
+    <h1 class="sheet-title">Modelo de Simulación para la Optimización del Ciclo de Compra y Adquisición de Materiales en la Producción de Tableros Eléctricos de ACL BEST COMPANY S.A.C.</h1>
+
+    <div class="sheet-rule"></div>
+
+    <div class="sheet-people">
+      <div>
+        <div class="cp-label">Docente</div>
+        <div class="cp-val">Sebastián Willis Lozada</div>
+      </div>
+      <div>
+        <div class="cp-label">Integrantes</div>
+        <div class="cp-names">
+          López Cabrera, Luis Diego<br>
+          Muñoz Loza, Alissa Kriseyda<br>
+          Chávez Pinado, Evelyn Rubí<br>
+          Vergaray Huatay, Jesús Enrique<br>
+          Castañeda Bashi, Victor Jesús
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-rule"></div>
+    <div class="sheet-foot">Lima, Perú &nbsp;—&nbsp; 2026</div>
+  </div>
+</section>
+
+<!-- 2 · FICHA DE LA EMPRESA -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-building"></i> Datos de la empresa</span>
+  <div class="s-title">Ficha de ACL BEST COMPANY S.A.C.</div>
+  <div class="s-sub">Empresa privada peruana constituida en <b>2019</b>, del sector metalmecánico y de manufactura eléctrica. Diseña, fabrica e integra <b>tableros eléctricos de baja (BT) y media tensión (MT)</b> bajo modelo <b>make-to-order</b> y filosofía Just-In-Time.</div>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1.15fr .85fr;gap:18px">
+      <div>
+        <div class="grid g3" style="margin-bottom:14px">
+          <div class="stat"><div class="k">Constituida</div><div class="v" style="font-size:22px">2019</div><div class="d">Accionariado cerrado</div></div>
+          <div class="stat a"><div class="k">Tamaño</div><div class="v" style="font-size:22px">MYPE</div><div class="d">11–50 colaboradores</div></div>
+          <div class="stat"><div class="k">Sede</div><div class="v" style="font-size:16px">Santiago de Surco</div><div class="d">Jr. Camino Real 577, Lima</div></div>
+          <div class="stat g"><div class="k">Modelo</div><div class="v" style="font-size:16px">Make-to-Order</div><div class="d">Producción bajo pedido</div></div>
+          <div class="stat"><div class="k">Normas</div><div class="v" style="font-size:16px">IEC 61439-1/2</div><div class="d">+ Código Nac. de Electricidad</div></div>
+          <div class="stat g"><div class="k">Rol</div><div class="v" style="font-size:16px">Integrador</div><div class="d">certificado de marcas globales</div></div>
+        </div>
+        <div class="card">
+          <h4><i class="fa-solid fa-gears"></i> El ciclo de compras es el motor logístico</h4>
+          <p>En un entorno make-to-order, la <b>compra y adquisición de materiales</b> no es una función de soporte: determina directamente el <b>lead time</b> de fabricación, el nivel de servicio y la rentabilidad. Conecta las "recetas" (listas de materiales) con la disponibilidad física de insumos en planta.</p>
+        </div>
+        <p class="mini" style="margin:12px 0 6px;font-weight:700;color:var(--navy)">Integrador certificado de marcas de clase mundial</p>
+        <div class="brands">
+          <span class="brand">Schneider Electric</span><span class="brand">Legrand</span><span class="brand">ABB</span><span class="brand">Rittal</span>
+        </div>
+      </div>
+      <div class="imgslot">
+        <img src="tablero.jpg" alt="Tablero eléctrico / planta" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="imgph" style="display:flex">
+          <i class="fa-solid fa-image"></i>
+          <b>Foto de tablero eléctrico o planta</b>
+          <span>Coloca una imagen llamada <code>tablero.jpg</code> en esta misma carpeta y aparecerá aquí automáticamente.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · CARTERA DE PROYECTOS -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-briefcase"></i> Cartera de proyectos</span>
+  <div class="s-title">Proyectos en ejecución · Ene–Mar 2026</div>
+  <div class="s-sub"><b>80 tableros eléctricos distintos</b> en ejecución simultánea (oct-2025 a feb-2026) para sectores altamente sensibles. Este volumen real sustenta las <b>75 recetas</b> usadas como carga del modelo de simulación.</div>
+  <div class="s-body">
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="card"><h4 style="color:var(--navy2)"><i class="fa-solid fa-landmark"></i> Sector Público y Estatal</h4><p><b>SUNAT Surco:</b> integración de celdas bajo protocolo <b>Blokset</b>, tableros de distribución general, tableros de transferencia automática (IEC) y sistemas de compensación reactiva de gran capacidad.</p></div>
+      <div class="card"><h4 style="color:var(--green)"><i class="fa-solid fa-hospital"></i> Sector Salud</h4><p><b>Hospital de Emergencias Egoavil:</b> tableros generales de distribución y transferencia.<br><b>Hospital María Auxiliadora:</b> Tablero General BT, banco de condensadores y tablero de fuerza de UPS.</p></div>
+      <div class="card"><h4 style="color:var(--amber)"><i class="fa-solid fa-building-user"></i> Sector Inmobiliario</h4><p>Gabinetes de distribución integrados y tableros para vivienda multifamiliar a gran escala: <b>Edificio Multifamiliar Ativa</b> y <b>Edificio Multifamiliar Brera</b>.</p></div>
+    </div>
+    <div class="callout b"><b>Alta exigencia contractual.</b> Los plazos con clientes del sector público y salud implican penalidades severas ante retrasos: por eso el tiempo de ciclo del área de compras es crítico para el negocio.</div>
+  </div>
+</section>
+
+<!-- 4 · PROBLEMA -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-triangle-exclamation"></i> Problema de estudio</span>
+  <div class="s-title">Cuello de botella estructural en el ciclo de compras</div>
+  <div class="s-sub">El <b>KPI principal</b> es el <b>Tiempo de Ciclo de las Órdenes de Compra</b>: desde la recepción de la receta hasta que el material está disponible en inventario. La tasa de ingreso de requerimientos supera la capacidad real de procesamiento del área.</div>
+  <div class="s-body">
+    <div class="grid g4" style="margin-bottom:16px">
+      <div class="stat r"><div class="k">Tiempo de ciclo (As-Is)</div><div class="v count" data-count="170.70" data-dec="2" data-suf=" h">0 h</div><div class="d">Picos de hasta 290 h</div></div>
+      <div class="stat r"><div class="k">OCs cerradas</div><div class="v"><span class="count" data-count="45">0</span> / 75</div><div class="d">60% · 41 comunes + 4 esp.</div></div>
+      <div class="stat r"><div class="k">Utilización Especialista</div><div class="v count" data-count="99.9" data-dec="1" data-suf=" %">0 %</div><div class="d">Punto único de falla</div></div>
+      <div class="stat a"><div class="k">Trabajo en proceso</div><div class="v">40 %</div><div class="d">Backlog que se acumula</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="callout r"><b>No es lentitud, es capacidad.</b> El proceso no logra drenar ni siquiera la demanda actual: acumula un déficit estructural período tras período, con el Especialista de Compras operando de forma sostenida cerca de su límite.</div>
+      <div class="card">
+        <h4><i class="fa-solid fa-magnifying-glass-chart"></i> Formulación del problema</h4>
+        <p>¿De qué manera el modelado y simulación en <b>Arena</b> del ciclo de compras, y su rediseño mediante un escenario <b>To-Be con ERP</b>, permitirán reducir significativamente el tiempo de ciclo de las Órdenes de Compra y elevar la capacidad operativa de la organización?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · OBJETIVOS -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-bullseye"></i> Objetivos</span>
+  <div class="s-title">Qué buscamos demostrar</div>
+  <div class="s-body">
+    <div class="callout b" style="margin-bottom:16px"><b>Objetivo general.</b> Optimizar el ciclo de compra y adquisición de materiales de ACL BEST COMPANY S.A.C. mediante ingeniería de procesos y simulación de eventos discretos en <b>Arena</b>, con el fin de <b>reducir significativamente el tiempo de ciclo</b> de las Órdenes de Compra y <b>elevar la capacidad operativa</b> de la organización.</div>
+    <div class="grid g3">
+      <div class="card"><h4><i class="fa-solid fa-1"></i> Diagnosticar el As-Is</h4><p>Con flujogramas, <b>DAP</b> y modelamiento en Arena, identificando cuantitativamente los cuellos de botella y tiempos improductivos.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-2"></i> Hallar causas raíz</h4><p>Determinarlas con el <b>Diagrama de Ishikawa</b> y priorizarlas mediante el <b>Análisis de Pareto</b>.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-3"></i> Diseñar el To-Be Realista</h4><p>Simular un escenario que incorpore una herramienta tecnológica (ERP) que resuelva las causas raíz identificadas.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-4"></i> Evaluar el To-Be Optimista</h4><p>Sustentar el <b>incremento de capacidad operativa</b> y competitividad tras resolver el cuello de botella.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-5"></i> Concluir y recomendar</h4><p>Formular conclusiones y recomendaciones para la implementación de la herramienta seleccionada.</p></div>
+      <div class="card" style="background:var(--sky);border-color:var(--sky2)"><h4 style="color:var(--navy2)"><i class="fa-solid fa-gauge"></i> KPI central</h4><p><b>Tiempo de Ciclo de las OC</b> + % de recetas cerradas dentro del periodo.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · PROCESOS CLAVE -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-sitemap"></i> Procesos clave</span>
+  <div class="s-title">Recursos del modelo y responsabilidades</div>
+  <div class="s-sub">Alcance: desde la recepción de la receta hasta el ingreso del material a inventario. Cuatro recursos humanos (capacidad 1 c/u) ejecutan el proceso; el As-Is suma un quinto recurso que el ERP elimina.</div>
+  <div class="s-body">
+    <table>
+      <thead><tr><th>Recurso</th><th>Responsabilidad en el ciclo</th><th>Observación</th></tr></thead>
+      <tbody>
+        <tr><td class="t-navy">Especialista 1</td><td>Evaluación de cotizaciones, registro y generación de OC, emparejamiento documental.</td><td class="t-red">Recurso saturado (99.9%)</td></tr>
+        <tr><td class="t-navy">Contador 1</td><td>Control y aprobación presupuestal de las cotizaciones (Finanzas).</td><td>Utilización 26.7%</td></tr>
+        <tr><td class="t-navy">Recepcionista 1</td><td>Atención inicial y recepción de documentos del proceso.</td><td>Utilización 10.5%</td></tr>
+        <tr><td class="t-navy">Operario de Inventario 1</td><td>Verificación física e ingreso del producto al inventario / liberación a planta.</td><td>Utilización 8.6%</td></tr>
+        <tr style="background:#fdf1de"><td class="t-navy">Asistente Operario</td><td>Digitación y traslado documental manual.</td><td class="t-red">Solo As-Is · eliminado por el ERP</td></tr>
+        <tr><td class="t-navy">Proveedores (común/esp.)</td><td>Agentes externos que cotizan y despachan insumos.</td><td>Retrasos (Delay)</td></tr>
+      </tbody>
+    </table>
+    <div class="grid g3" style="margin-top:16px">
+      <div class="callout"><b>Regla 95/5.</b> Cada receta se clasifica: ~95% <b>común</b> (OC_COMUN) y ~5% <b>específica</b> (OC_ESP).</div>
+      <div class="callout"><b>Relación 1:1.</b> Cada receta genera exactamente una Orden de Compra que recorre todo el ciclo hasta su cierre.</div>
+      <div class="callout r"><b>Punto único de falla.</b> Todo el proceso está limitado por la disponibilidad de un solo recurso: el Especialista.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · ETAPAS + BUCLES -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-list-ol"></i> Procesos clave</span>
+  <div class="s-title">Las 19 actividades y los 2 bucles de reproceso</div>
+  <div class="s-body">
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="card"><h4 style="color:var(--navy2)"><i class="fa-solid fa-file-invoice"></i> Cotización</h4><p>Recepción de receta → decisión de tipo (95/5) → solicitud de cotización → espera del proveedor → recepción y evaluación de la cotización.</p></div>
+      <div class="card"><h4 style="color:var(--amber)"><i class="fa-solid fa-stamp"></i> Aprobación y emisión de OC</h4><p>Envío a Finanzas → aprobación presupuestal → <b>registro de la OC</b> → <b>generación de la OC</b> al proveedor. Aquí se concentran las colas del Especialista.</p></div>
+      <div class="card"><h4 style="color:var(--green)"><i class="fa-solid fa-box-open"></i> Recepción y stock</h4><p><b>Emparejamiento (Match)</b> OC ↔ cotización → recepción y verificación contra guía de remisión → ingreso del producto a inventario → liberación a planta.</p></div>
+    </div>
+    <div class="grid g2">
+      <div class="callout r"><b>Bucle 1 · Cotización no aceptable.</b> La cotización se acepta con probabilidad del <b>90%</b>; el <b>10%</b> restante obliga a solicitar una nueva cotización al proveedor (retorno a la actividad 3).</div>
+      <div class="callout r"><b>Bucle 2 · Reposición.</b> Si al recepcionar el pedido la cantidad no concuerda con la guía de remisión, se genera una solicitud de reposición que reinicia parcialmente el ciclo de espera.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · FLUJOGRAMA -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-diagram-project"></i> Flujograma As-Is</span>
+  <div class="s-title">Diagrama BPMN por carriles funcionales</div>
+  <div class="s-sub">Diagrama BPMN por carriles funcionales (situación As-Is). Inicio ● verde, tareas azules, compuertas ◆, esperas ⏱ y fin ● rojo. <b style="color:#d6293e">2 bucles</b> de reproceso (cotización y reposición) en rojo punteado.</div>
+  <div class="s-body">
+    <div style="overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px;margin-bottom:10px">
+      <svg viewBox="0 0 2360 720" style="width:100%;height:auto;min-width:1240px;display:block">
+        <style>
+          .bx{fill:#e9f2fb;stroke:#5b9bd5;stroke-width:1.5}
+          .bt{font:600 13px 'Segoe UI',sans-serif;fill:#173a5a}
+          .gw{fill:#fff;stroke:#e0a800;stroke-width:1.6}
+          .gl{font:600 11.5px 'Segoe UI',sans-serif;fill:#946a00}
+          .el{font:600 11px 'Segoe UI',sans-serif;fill:#5a6b7c}
+          .lane{fill:#fbfdff;stroke:#cdd9e6;stroke-width:1}
+          .lbl{fill:#eef3f9;stroke:#cdd9e6;stroke-width:1}
+          .lt{font:700 12px 'Segoe UI',sans-serif;fill:#00305e}
+          .fl{fill:none;stroke:#8aa0b4;stroke-width:1.6}
+          .flr{fill:none;stroke:#d6293e;stroke-width:1.7;stroke-dasharray:6 4}
+          .tm{font:600 11px 'Segoe UI',sans-serif;fill:#946a00}
+        </style>
+        <defs>
+          <marker id="ar" markerWidth="11" markerHeight="11" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#8aa0b4"/></marker>
+          <marker id="arr" markerWidth="11" markerHeight="11" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#d6293e"/></marker>
+        </defs>
+
+        <!-- LANES -->
+        <rect class="lbl" x="0" y="20" width="150" height="100"/><rect class="lane" x="150" y="20" width="2210" height="100"/>
+        <rect class="lbl" x="0" y="120" width="150" height="180"/><rect class="lane" x="150" y="120" width="2210" height="180"/>
+        <rect class="lbl" x="0" y="300" width="150" height="120"/><rect class="lane" x="150" y="300" width="2210" height="120"/>
+        <rect class="lbl" x="0" y="420" width="150" height="140"/><rect class="lane" x="150" y="420" width="2210" height="140"/>
+        <rect class="lbl" x="0" y="560" width="150" height="110"/><rect class="lane" x="150" y="560" width="2210" height="110"/>
+        <rect class="lbl" x="0" y="670" width="150" height="50"/><rect class="lane" x="150" y="670" width="2210" height="50"/>
+        <text class="lt" text-anchor="middle" transform="rotate(-90 34 70)" x="34" y="70">Producción (Ing.)</text>
+        <text class="lt" text-anchor="middle" transform="rotate(-90 34 210)" x="34" y="210">Compras (Op.)</text>
+        <text class="lt" text-anchor="middle" transform="rotate(-90 34 360)" x="34" y="360">Finanzas</text>
+        <text class="lt" text-anchor="middle" transform="rotate(-90 34 490)" x="34" y="490">Proveedores</text>
+        <text class="lt" text-anchor="middle" transform="rotate(-90 34 615)" x="34" y="615">Almacén</text>
+        <text class="lt" text-anchor="middle" transform="rotate(-90 34 695)" x="34" y="695">Prod. (Taller)</text>
+
+        <!-- FLECHAS (debajo de nodos) -->
+        <!-- inicio/compras -->
+        <path class="fl" d="M229,70 H301" marker-end="url(#ar)"/>
+        <path class="fl" d="M360,89 V181" marker-end="url(#ar)"/>
+        <path class="fl" d="M419,205 H461" marker-end="url(#ar)"/>
+        <path class="fl" d="M579,205 H621" marker-end="url(#ar)"/>
+        <path class="fl" d="M739,205 H781" marker-end="url(#ar)"/>
+        <path class="fl" d="M899,205 H939" marker-end="url(#ar)"/>
+        <path class="fl" d="M991,205 H1031" marker-end="url(#ar)"/>
+        <text class="el" x="1002" y="197">Sí</text>
+        <!-- bucle A -->
+        <path class="flr" d="M965,179 V150 H520 V181" marker-end="url(#arr)"/>
+        <text class="el" x="690" y="143" fill="#d6293e">No · Bucle 1 · cotización</text>
+        <!-- compras -> finanzas -->
+        <path class="fl" d="M1090,229 V336" marker-end="url(#ar)"/>
+        <path class="fl" d="M1149,360 H1230" marker-end="url(#ar)"/>
+        <path class="fl" d="M1270,360 H1354" marker-end="url(#ar)"/>
+        <!-- finanzas aprobado Sí -> cola registro -->
+        <path class="fl" d="M1380,334 V250 H1310 V225" marker-end="url(#ar)"/>
+        <text class="el" x="1330" y="243">Sí</text>
+        <!-- (sin bucle de presupuesto: el documento final define solo 2 bucles) -->
+        <!-- registro -> generar -> gateway proveedor -->
+        <path class="fl" d="M1330,205 H1391" marker-end="url(#ar)"/>
+        <path class="fl" d="M1509,205 H1551" marker-end="url(#ar)"/>
+        <path class="fl" d="M1669,205 H1709" marker-end="url(#ar)"/>
+        <!-- gateway proveedor -> 13.1 / 13.2 -->
+        <path class="fl" d="M1735,231 V434" marker-end="url(#ar)"/>
+        <text class="el" x="1745" y="290">Común</text>
+        <path class="fl" d="M1761,205 H1810 V525 H1794" marker-end="url(#ar)"/>
+        <text class="el" x="1815" y="330">Específico</text>
+        <!-- t3 -> gateway proveedor comun (envío a proveedores) -->
+        <path class="fl" d="M520,229 V444" marker-end="url(#ar)"/>
+        <path class="fl" d="M546,464 H601" marker-end="url(#ar)"/>
+        <text class="el" x="556" y="452">Sí</text>
+        <path class="fl" d="M520,496 V525 H601" marker-end="url(#ar)"/>
+        <text class="el" x="533" y="516">No</text>
+        <!-- 4.1 / 4.2 -> recepción cotización -->
+        <path class="fl" d="M660,434 V300 H680 V229" marker-end="url(#ar)"/>
+        <path class="fl" d="M700,502 V300 H700 V229" marker-end="url(#ar)"/>
+        <!-- 13.1/13.2 -> almacén llegada -->
+        <path class="fl" d="M1735,482 V540 H1560 V591" marker-end="url(#ar)"/>
+        <path class="fl" d="M1735,549 V556 H1560" />
+        <!-- almacén secuencia -->
+        <path class="fl" d="M1619,615 H1670" marker-end="url(#ar)"/>
+        <path class="fl" d="M1710,615 H1756" marker-end="url(#ar)"/>
+        <path class="fl" d="M1874,615 H1909" marker-end="url(#ar)"/>
+        <path class="fl" d="M1961,615 H1993" marker-end="url(#ar)"/>
+        <text class="el" x="1972" y="607">Sí</text>
+        <path class="fl" d="M2109,615 H2113" marker-end="url(#ar)"/>
+        <path class="fl" d="M2229,615 H2233" marker-end="url(#ar)"/>
+        <path class="fl" d="M2290,639 V676" marker-end="url(#ar)"/>
+        <!-- bucle C: conforme No -> reposición -->
+        <path class="flr" d="M1935,589 V500 H2001" marker-end="url(#arr)"/>
+        <text class="el" x="1945" y="556" fill="#d6293e">No · Bucle 2 · reposición</text>
+        <path class="fl" d="M2119,470 H2174" marker-end="url(#ar)"/>
+        <path class="flr" d="M2200,444 V424 H1735 V434" marker-end="url(#arr)"/>
+        <text class="el" x="1950" y="418" fill="#d6293e">Sí (reposición)</text>
+
+        <!-- NODOS -->
+        <!-- inicio -->
+        <circle cx="210" cy="70" r="19" fill="#d6ebc0" stroke="#4a9e2f" stroke-width="2.5"/>
+        <text class="el" text-anchor="middle" x="210" y="104">INICIO · Receta</text>
+        <!-- t1 -->
+        <rect class="bx" x="301" y="46" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="360" y="66"><tspan x="360">1. Recepción de</tspan><tspan x="360" dy="14">receta técnica</tspan></text>
+
+        <!-- compras row -->
+        <rect class="bx" x="301" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="360" y="201"><tspan x="360">2. Clasificación</tspan><tspan x="360" dy="14">del tipo de receta</tspan></text>
+        <rect class="bx" x="461" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="520" y="201"><tspan x="520">3. Solicitar</tspan><tspan x="520" dy="14">cotización</tspan></text>
+        <rect class="bx" x="621" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="680" y="201"><tspan x="680">5. Recepción y</tspan><tspan x="680" dy="14">registro cotiz.</tspan></text>
+        <rect class="bx" x="781" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="840" y="201"><tspan x="840">6. Evaluación de</tspan><tspan x="840" dy="14">aceptabilidad</tspan></text>
+        <polygon class="gw" points="965,179 991,205 965,231 939,205"/><text class="gl" text-anchor="middle" x="965" y="167"><tspan x="965">¿Cotización</tspan><tspan x="965" dy="12">aceptable?</tspan></text>
+        <rect class="bx" x="1031" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="1090" y="201"><tspan x="1090">7. Envío propuesta</tspan><tspan x="1090" dy="14">a Finanzas</tspan></text>
+        <!-- 11 cola (timer) -->
+        <circle cx="1310" cy="205" r="20" fill="#fdeecd" stroke="#d29922" stroke-width="2"/><circle cx="1310" cy="205" r="14" fill="none" stroke="#d29922" stroke-width="1.2"/><line x1="1310" y1="205" x2="1310" y2="196" stroke="#d29922" stroke-width="1.4"/><line x1="1310" y1="205" x2="1317" y2="209" stroke="#d29922" stroke-width="1.4"/><text class="tm" text-anchor="middle" x="1310" y="240"><tspan x="1310">11. Cola</tspan><tspan x="1310" dy="12">registro OC</tspan></text>
+        <rect class="bx" x="1391" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="1450" y="201"><tspan x="1450">10. Registrar</tspan><tspan x="1450" dy="14">Orden de Compra</tspan></text>
+        <rect class="bx" x="1551" y="181" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="1610" y="201"><tspan x="1610">12. Generar y</tspan><tspan x="1610" dy="14">enviar OC</tspan></text>
+        <polygon class="gw" points="1735,179 1761,205 1735,231 1709,205"/><text class="gl" text-anchor="middle" x="1735" y="167"><tspan x="1735">¿Qué</tspan><tspan x="1735" dy="12">proveedor?</tspan></text>
+
+        <!-- finanzas -->
+        <rect class="bx" x="1031" y="336" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="1090" y="356"><tspan x="1090">8. Revisión y</tspan><tspan x="1090" dy="14">análisis presup.</tspan></text>
+        <circle cx="1250" cy="360" r="20" fill="#fdeecd" stroke="#d29922" stroke-width="2"/><circle cx="1250" cy="360" r="14" fill="none" stroke="#d29922" stroke-width="1.2"/><line x1="1250" y1="360" x2="1250" y2="351" stroke="#d29922" stroke-width="1.4"/><line x1="1250" y1="360" x2="1257" y2="364" stroke="#d29922" stroke-width="1.4"/><text class="tm" text-anchor="middle" x="1250" y="395"><tspan x="1250">9. Espera de</tspan><tspan x="1250" dy="12">aprobación</tspan></text>
+        <polygon class="gw" points="1380,334 1406,360 1380,386 1354,360"/><text class="gl" text-anchor="middle" x="1380" y="322"><tspan x="1380">¿Presupuesto</tspan><tspan x="1380" dy="12">aprobado?</tspan></text>
+
+        <!-- proveedores -->
+        <polygon class="gw" points="520,444 546,470 520,496 494,470"/><text class="gl" text-anchor="middle" x="520" y="434"><tspan x="520">¿Proveedor</tspan></text>
+        <rect class="bx" x="601" y="434" width="118" height="46" rx="8"/><text class="bt" text-anchor="middle" x="660" y="461"><tspan x="660">4.1 Proveedor</tspan><tspan x="660" dy="14">común</tspan></text>
+        <rect class="bx" x="601" y="502" width="118" height="46" rx="8"/><text class="bt" text-anchor="middle" x="660" y="529"><tspan x="660">4.2 Proveedor</tspan><tspan x="660" dy="14">específico</tspan></text>
+        <rect class="bx" x="1676" y="434" width="118" height="46" rx="8"/><text class="bt" text-anchor="middle" x="1735" y="461"><tspan x="1735">13.1 Proveedor</tspan><tspan x="1735" dy="14">común</tspan></text>
+        <rect class="bx" x="1676" y="502" width="118" height="46" rx="8"/><text class="bt" text-anchor="middle" x="1735" y="529"><tspan x="1735">13.2 Proveedor</tspan><tspan x="1735" dy="14">específico</tspan></text>
+        <rect class="bx" x="2001" y="446" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="2060" y="466"><tspan x="2060">Solicitar reposición</tspan><tspan x="2060" dy="14">al proveedor</tspan></text>
+        <polygon class="gw" points="2200,444 2226,470 2200,496 2174,470"/><text class="gl" text-anchor="middle" x="2200" y="516"><tspan x="2200">¿Reposición?</tspan></text>
+
+        <!-- almacén -->
+        <rect class="bx" x="1501" y="591" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="1560" y="611"><tspan x="1560">14. Llegada física</tspan><tspan x="1560" dy="14">y descarga</tspan></text>
+        <circle cx="1690" cy="615" r="20" fill="#f7cace" stroke="#d6293e" stroke-width="2.4"/><circle cx="1690" cy="615" r="14" fill="none" stroke="#d6293e" stroke-width="1.2"/><line x1="1690" y1="615" x2="1690" y2="606" stroke="#d6293e" stroke-width="1.4"/><line x1="1690" y1="615" x2="1697" y2="619" stroke="#d6293e" stroke-width="1.4"/><text class="tm" text-anchor="middle" x="1690" y="649" fill="#d6293e"><tspan x="1690">15. MATCH</tspan><tspan x="1690" dy="12">291.7 h</tspan></text>
+        <rect class="bx" x="1756" y="591" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="1815" y="611"><tspan x="1815">16. Verificación</tspan><tspan x="1815" dy="14">física vs OC</tspan></text>
+        <polygon class="gw" points="1935,589 1961,615 1935,641 1909,615"/><text class="gl" text-anchor="middle" x="1935" y="577"><tspan x="1935">¿Conforme</tspan><tspan x="1935" dy="12">con guía?</tspan></text>
+        <rect class="bx" x="1996" y="591" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="2055" y="611"><tspan x="2055">17. Registro</tspan><tspan x="2055" dy="14">recepción BD</tspan></text>
+        <rect class="bx" x="2116" y="591" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="2175" y="611"><tspan x="2175">18. Ingreso a</tspan><tspan x="2175" dy="14">estanterías</tspan></text>
+        <rect class="bx" x="2231" y="591" width="118" height="48" rx="8"/><text class="bt" text-anchor="middle" x="2290" y="611"><tspan x="2290">19. Salida a</tspan><tspan x="2290" dy="14">planta</tspan></text>
+
+        <!-- fin -->
+        <circle cx="2290" cy="695" r="19" fill="#f7cace" stroke="#d6293e" stroke-width="4"/>
+        <text class="el" text-anchor="end" x="2258" y="699" fill="#d6293e">FIN · Materiales en planta</text>
+      </svg>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:11.5px;color:var(--ink2)">
+      <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#d6ebc0;border:2px solid #4a9e2f;vertical-align:-2px"></span> Inicio</span>
+      <span><span style="display:inline-block;width:14px;height:10px;border-radius:3px;background:#e9f2fb;border:1.5px solid #5b9bd5;vertical-align:-1px"></span> Tarea</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#fff;border:1.5px solid #e0a800;transform:rotate(45deg);vertical-align:-2px"></span> Compuerta</span>
+      <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fdeecd;border:2px solid #d29922;vertical-align:-2px"></span> Espera/Timer</span>
+      <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f7cace;border:3px solid #d6293e;vertical-align:-2px"></span> Fin</span>
+      <span style="color:#d6293e">┈┈ Bucle de reproceso (cotización / reposición)</span>
+    </div>
+    <div class="callout r"><b>El punto de estrangulamiento:</b> las actividades de <b>registro (11)</b>, <b>generación (13)</b> y <b>emparejamiento (15)</b> de la OC compiten por un único recurso —el <b>Especialista</b>, saturado al 99.9%—, formando las colas más largas del proceso.</div>
+  </div>
+</section>
+
+<!-- 8 · DAP -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-clipboard-list"></i> DAP · Línea base</span>
+  <div class="s-title">Diagrama de Análisis de Procesos (DAP)</div>
+  <div class="s-sub">Las 19 actividades del ciclo clasificadas en operación ◯, transporte ⇨, espera D, inspección ◇ y almacenamiento △. El cursograma revela que el tiempo está dominado por la espera.</div>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1.35fr 1fr;gap:18px">
+      <div>
+      <table>
+        <thead><tr><th>#</th><th>Actividad</th><th>Símb.</th><th style="text-align:right">Tiempo (h)</th><th>Pareto</th></tr></thead>
+        <tbody style="font-size:11.5px">
+          <tr style="background:#fdeaec"><td>12</td><td>Espera en cola del Especialista (registro OC)</td><td class="sym">D</td><td class="t-num t-red">46.93</td><td class="t-red">#1</td></tr>
+          <tr style="background:#fdeaec"><td>14</td><td>Espera en cola del Especialista (generación OC)</td><td class="sym">D</td><td class="t-num t-red">45.99</td><td class="t-red">#2</td></tr>
+          <tr style="background:#fdeaec"><td>6</td><td>Espera en cola del Especialista (evaluación)</td><td class="sym">D</td><td class="t-num t-red">38.37</td><td class="t-red">#3</td></tr>
+          <tr style="background:#fdeaec"><td>15</td><td>Emparejamiento (Match) OC ↔ cotización</td><td class="sym">D</td><td class="t-num t-red">34.77</td><td class="t-red">#4</td></tr>
+          <tr style="background:#fdeaec"><td>4</td><td>Espera de respuesta del proveedor</td><td class="sym">D</td><td class="t-num t-red">30.91</td><td class="t-red">#5</td></tr>
+          <tr><td>11</td><td>Registrar Orden de Compra</td><td class="sym">◯</td><td class="t-num">2.05</td><td class="tag-va">VA</td></tr>
+          <tr><td>16</td><td>Recepcionar y verificar vs. guía</td><td class="sym">◇</td><td class="t-num">0.86</td><td>—</td></tr>
+          <tr><td>18</td><td>Ingresar producto a inventario</td><td class="sym">△</td><td class="t-num">0.35</td><td>—</td></tr>
+          <tr><td>3</td><td>Solicitar cotización a proveedor</td><td class="sym">◯</td><td class="t-num">0.24</td><td class="tag-va">VA</td></tr>
+        </tbody>
+      </table>
+      <p class="mini" style="margin-top:6px">7 operaciones · 3 transportes · 7 esperas · 1 inspección · 1 almacenamiento.</p>
+      </div>
+      <div>
+        <div class="stat r" style="margin-bottom:12px"><div class="k">Tiempo total del ciclo</div><div class="v count" data-count="204.27" data-dec="2" data-suf=" h">0 h</div><div class="d">12,256.1 minutos</div></div>
+        <div class="grid g2" style="gap:12px;margin-bottom:12px">
+          <div class="stat g"><div class="k">Valor Agregado (7 op.)</div><div class="v" style="font-size:22px">1.24 %</div><div class="d">152.4 min</div></div>
+          <div class="stat r"><div class="k">Esperas (7)</div><div class="v" style="font-size:22px">97.8 %</div><div class="d">11,991.6 min</div></div>
+        </div>
+        <div class="callout r"><b>El problema no es de eficiencia en la tarea, sino de disponibilidad de recursos.</b> El DAP (204.27 h de una OC puntual) y el promedio de Arena (170.70 h, con variabilidad) apuntan a lo mismo: el ciclo está dominado por la <b>espera</b>, no por el trabajo efectivo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · ISHIKAWA -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-fish-fins"></i> Análisis de causa raíz</span>
+  <div class="s-title">Diagrama de Ishikawa (6M)</div>
+  <div class="s-sub">Causas que explican científicamente las demoras administrativas y de proveedores.</div>
+  <div class="s-body">
+    <div class="ishi">
+      <svg viewBox="0 0 1480 600" style="width:100%;height:auto;max-height:74vh;display:block">
+        <style>
+          .sp{fill:none;stroke:#00305e;stroke-width:4}
+          .bn{fill:none;stroke:#9bb3cc;stroke-width:2.5}
+          .cz{font:600 12.5px 'Segoe UI',sans-serif;fill:#4a5a6a}
+          .cat{font:800 13px 'Segoe UI',sans-serif;fill:#fff}
+        </style>
+        <defs><marker id="ahi" markerWidth="12" markerHeight="12" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#00305e"/></marker></defs>
+        <!-- espina central -->
+        <line class="sp" x1="40" y1="300" x2="1188" y2="300" marker-end="url(#ahi)"/>
+        <!-- cabeza (efecto) -->
+        <polygon points="1198,300 1252,255 1470,255 1470,345 1252,345" fill="#d6293e"/>
+        <text text-anchor="middle" x="1361" y="290" fill="#fff"><tspan x="1361" style="font:800 15px 'Segoe UI'">EFECTO</tspan><tspan x="1361" dy="19" style="font:600 12px 'Segoe UI'">Ciclo 170 h · 97.8% espera</tspan><tspan x="1361" dy="16" style="font:600 12px 'Segoe UI'">solo 45 de 75 recetas</tspan></text>
+
+        <!-- ESPINAS SUPERIORES -->
+        <line class="bn" x1="260" y1="300" x2="140" y2="95"/>
+        <rect x="58" y="64" width="150" height="27" rx="6" fill="#0057b8"/><text class="cat" text-anchor="middle" x="133" y="83">Método</text>
+        <text class="cz" x="236" y="252">Emparejamiento manual OC↔cotiz.</text>
+        <text class="cz" x="208" y="206">Retrabajos por rechazos</text>
+        <text class="cz" x="182" y="160">Falta de estandarización</text>
+
+        <line class="bn" x1="560" y1="300" x2="440" y2="95"/>
+        <rect x="372" y="64" width="152" height="27" rx="6" fill="#f2a900"/><text class="cat" text-anchor="middle" x="448" y="83" fill="#4a3400">Materiales</text>
+        <text class="cz" x="536" y="252">Componentes específicos escasos</text>
+        <text class="cz" x="508" y="206">Disponibilidad variable</text>
+        <text class="cz" x="482" y="160">Demoras de abastecimiento</text>
+
+        <line class="bn" x1="860" y1="300" x2="740" y2="95"/>
+        <rect x="648" y="64" width="204" height="27" rx="6" fill="#d6293e"/><text class="cat" text-anchor="middle" x="750" y="83">Medio Ambiente</text>
+        <text class="cz" x="836" y="252">Variabilidad de proveedores</text>
+        <text class="cz" x="808" y="206">Tiempos de entrega inciertos</text>
+        <text class="cz" x="782" y="160">Incertidumbre de abastecimiento</text>
+
+        <!-- ESPINAS INFERIORES -->
+        <line class="bn" x1="260" y1="300" x2="140" y2="505"/>
+        <rect x="35" y="509" width="212" height="27" rx="6" fill="#0072ce"/><text class="cat" text-anchor="middle" x="141" y="528">Máquina / Sistema</text>
+        <text class="cz" x="236" y="352">Sin integración de áreas</text>
+        <text class="cz" x="208" y="398">Intercambio manual de info.</text>
+        <text class="cz" x="182" y="444">Sin trazabilidad</text>
+
+        <line class="bn" x1="560" y1="300" x2="440" y2="505"/>
+        <rect x="360" y="509" width="160" height="27" rx="6" fill="#1a9e57"/><text class="cat" text-anchor="middle" x="440" y="528">Mano de obra</text>
+        <text class="cz" x="536" y="352">Sobrecarga del Especialista</text>
+        <text class="cz" x="508" y="398">Concentra tareas críticas</text>
+        <text class="cz" x="482" y="444">Punto único de falla</text>
+
+        <line class="bn" x1="860" y1="300" x2="740" y2="505"/>
+        <rect x="663" y="509" width="154" height="27" rx="6" fill="#00305e"/><text class="cat" text-anchor="middle" x="740" y="528">Medición</text>
+        <text class="cz" x="836" y="352">Sin indicadores en tiempo real</text>
+        <text class="cz" x="808" y="398">Sin monitoreo del avance</text>
+        <text class="cz" x="782" y="444">No detecta desviaciones</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · PARETO -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-chart-column"></i> Análisis de causa raíz</span>
+  <div class="s-title">Diagrama de Pareto — priorización de causas</div>
+  <div class="s-sub">Sobre el tiempo total del ciclo (204.27 h): <b>5 actividades</b> concentran más del 80% de la demora acumulada, validando el principio 80/20.</div>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1.5fr 1fr;gap:18px;height:100%">
+      <div class="chart-box"><h4>Tiempo de espera por actividad (h) y % acumulado</h4><div class="chart-canvas"><canvas id="paretoChart"></canvas></div></div>
+      <div>
+        <div class="callout b" style="margin-bottom:14px"><b>Hallazgo 80/20.</b> Las <b>4 primeras causas superan el 81%</b> del ciclo; las 5 llegan al 96%. Las tres mayores (registro, generación y evaluación) comparten una misma raíz: la <b>contención sobre un único recurso, el Especialista</b>.</div>
+        <table>
+          <thead><tr><th>Actividad</th><th style="text-align:right">h</th><th style="text-align:right">% acum.</th></tr></thead>
+          <tbody style="font-size:11.5px">
+            <tr><td>Registro de la OC</td><td class="t-num t-red">46.93</td><td class="t-num">23.0%</td></tr>
+            <tr><td>Generación de la OC</td><td class="t-num t-red">45.99</td><td class="t-num">45.5%</td></tr>
+            <tr><td>Evaluación de cotización</td><td class="t-num t-red">38.37</td><td class="t-num">64.3%</td></tr>
+            <tr><td>Emparejamiento (Match)</td><td class="t-num t-red">34.77</td><td class="t-num">81.3%</td></tr>
+            <tr><td>Respuesta del proveedor</td><td class="t-num">30.91</td><td class="t-num">96.4%</td></tr>
+            <tr><td>Otras (14)</td><td class="t-num">7.30</td><td class="t-num">100%</td></tr>
+          </tbody>
+        </table>
+        <p class="mini" style="margin-top:8px">→ Registro, generación y emparejamiento son <b>manuales</b>: confirman la causa raíz del Ishikawa (falta de un sistema integrado).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · IMPACTO ECONÓMICO -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-coins"></i> Impacto económico</span>
+  <div class="s-title">Impacto económico de las ineficiencias</div>
+  <div class="s-sub">Un tiempo de ciclo cercano a <b>170 h</b> (con picos sobre 290 h) genera un impacto económico multidimensional sobre la MYPE. El costo se valoriza mediante <b>Costeo ABC</b>, desarrollado de forma externa al software de simulación.</div>
+  <div class="s-body">
+    <div class="grid g3" style="margin-bottom:16px">
+      <div class="card"><h4><i class="fa-solid fa-money-bill-transfer" style="color:var(--amber)"></i> Capital de trabajo inmovilizado</h4><p>Existen compromisos financieros (órdenes emitidas, aprobaciones, adelantos a proveedores) sin que el material físico haya ingresado aún a producción, afectando el <b>flujo de caja</b> de una pequeña empresa.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i> Punto único de falla</h4><p>El Especialista opera cerca de su límite de capacidad, concentrando las actividades críticas. Esto genera <b>riesgo de errores por sobrecarga</b> e interrupciones de toda la cadena ante su ausencia.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-gavel" style="color:var(--navy2)"></i> Penalidades y reputación</h4><p>El incumplimiento de plazos en proyectos de <b>sector público y salud</b> expone a penalidades contractuales, pérdida de reputación y riesgo de perder la <b>homologación</b> como integrador certificado.</p></div>
+    </div>
+    <div class="callout b"><b>Método ABC.</b> Las salidas del modelo Arena (utilización de recursos, número de OC procesadas, tiempo de espera por actividad) se emplean como <b>drivers de costo</b> para asignar el gasto a cada actividad del ciclo, en lugar de una tarifa horaria genérica dentro del simulador.</div>
+  </div>
+</section>
+
+<!-- 13 · MODELO ARENA -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-microchip"></i> Modelo de simulación · Arena</span>
+  <div class="s-title">Configuración del modelo</div>
+  <div class="s-sub">Horizonte de <b>480 h</b> (20 días de 24 h), igual en los tres escenarios para que sean comparables. Carga de <b>75 recetas</b> a intervalo constante, con relación <b>1:1</b> receta → Orden de Compra.</div>
+  <div class="s-body">
+    <div class="grid" style="grid-template-columns:1fr .82fr;gap:18px">
+      <div>
+        <div class="grid" style="gap:12px">
+          <div class="card"><h4 style="color:var(--navy2)"><i class="fa-solid fa-diagram-next"></i> Entrada y clasificación</h4>
+            <ul><li><b>Create:</b> 75 recetas (Max Arrivals = 75)</li><li><b>Decide "¿receta común?":</b> 95% común · 5% específica</li><li><b>Assign:</b> tipo de entidad y prioridad</li></ul></div>
+          <div class="card"><h4 style="color:var(--amber)"><i class="fa-solid fa-users-gear"></i> Recursos y tiempos</h4>
+            <ul><li><b>4 recursos</b> (cap. 1): Recepcionista, Contador, Especialista, Operario de Inventario · <b>+ Asistente Operario solo en As-Is</b></li><li>Distribuciones <b>Uniformes</b> por juicio experto (ej. proveedor común UNIF(2,30) min; específico UNIF(2,24) h)</li><li><b>Decide cotización:</b> 90% aceptada / 10% rechazada</li></ul></div>
+          <div class="card"><h4 style="color:var(--green)"><i class="fa-solid fa-object-group"></i> Emparejamiento y salida</h4>
+            <ul><li><b>Match:</b> empareja OC ↔ cotización aceptada</li><li>Verificación vs. guía → ingreso a inventario → <b>Dispose</b></li><li>Costos = 0 en Arena (<b>costeo ABC externo</b>); sin turnos ni failures</li></ul></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="imgslot" style="flex:1">
+          <img src="arena_modelo.png" alt="Modelo en Arena" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="imgph" style="display:flex">
+            <i class="fa-solid fa-diagram-project"></i>
+            <b>Captura de tu modelo en Arena</b>
+            <span>Guarda un screenshot como <code>arena_modelo.png</code> en esta carpeta y se mostrará aquí. Ideal: la vista completa del modelo con los módulos Create → Match → Dispose.</span>
+          </div>
+        </div>
+        <div class="callout b" style="font-size:12.5px"><b>Las 75 recetas no son arbitrarias:</b> reflejan el cronograma real de producción (≈80 tableros en ejecución), un supuesto conservador y representativo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · AS-IS + ANIMACIÓN MATCH -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-gauge-high"></i> Resultados · As-Is</span>
+  <div class="s-title">Diagnóstico de la línea base</div>
+  <div class="s-sub">480 h de simulación confirman el colapso: el 97.8% del tiempo es espera y todo el proceso está limitado por un único recurso saturado. Abajo, animación del cuello de botella en el Especialista.</div>
+  <div class="s-body">
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="stat r"><div class="k">Tiempo final promedio</div><div class="v count" data-count="170.70" data-dec="2" data-suf=" h">0 h</div><div class="d">Por orden de compra</div></div>
+      <div class="stat r"><div class="k">Utilización Especialista</div><div class="v count" data-count="99.9" data-dec="1" data-suf=" %">0 %</div><div class="d">Resto sub-utilizado</div></div>
+      <div class="stat r"><div class="k">OCs cerradas</div><div class="v"><span class="count" data-count="45">0</span> / 75</div><div class="d">60% · 40% queda en WIP</div></div>
+      <div class="stat a"><div class="k">Colas Registrar / Generar OC</div><div class="v" style="font-size:20px">43.9 / 46.0 h</div><div class="d">Mayores acumulaciones</div></div>
+    </div>
+    <div class="match-sim" id="matchSim">
+      <h4><i class="fa-solid fa-user-gear"></i> Simulación del cuello de botella (Especialista saturado 99.9%)</h4>
+      <div class="track">
+        <div class="track-label" style="color:var(--blue)">Órdenes en cola — registro y generación de OC</div>
+        <div class="lane-line"></div>
+        <div class="gate"></div><div class="gate-txt">ESPECIALISTA<br>99.9% ocupado</div>
+      </div>
+      <div class="track">
+        <div class="track-label" style="color:#f0a500">Cotizaciones esperando evaluación del Especialista</div>
+        <div class="lane-line"></div>
+        <div class="gate"></div>
+      </div>
+      <div class="msent">Órdenes cerradas y liberadas a planta: <b id="matchCount">0</b> / 45 &nbsp;·&nbsp; el resto queda como WIP (backlog)</div>
+    </div>
+    <div class="callout r" style="margin-top:12px"><b>Un desbalance de carga extremo:</b> mientras el Especialista está al 99.9%, el Recepcionista (10.5%), Contador (26.7%) y Operario de Inventario (8.6%) están sub-utilizados. El sistema no logra drenar ni siquiera la demanda actual.</div>
+  </div>
+</section>
+
+<!-- 15 · TO-BE realista -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-wand-magic-sparkles"></i> To-Be Realista</span>
+  <div class="s-title">El ERP resuelve el cuello de botella</div>
+  <div class="s-sub">El sistema ERP automatiza las tres actividades manuales críticas: <b>registro</b>, <b>generación</b> y <b>emparejamiento</b> de la Orden de Compra. El resultado es contundente.</div>
+  <div class="s-body">
+    <div class="grid g4" style="margin-bottom:16px">
+      <div class="stat g"><div class="k">Tiempo final promedio</div><div class="v count" data-count="21.41" data-dec="2" data-suf=" h">0 h</div><div class="d">−87.5% vs 170.70 h</div></div>
+      <div class="stat g"><div class="k">OCs procesadas</div><div class="v"><span class="count" data-count="75">0</span> / 75</div><div class="d">100% · 72 com + 3 esp</div></div>
+      <div class="stat g"><div class="k">Utilización Especialista</div><div class="v count" data-count="11.7" data-dec="1" data-suf=" %">0 %</div><div class="d">Desde 99.9%</div></div>
+      <div class="stat g"><div class="k">Cola registro OC</div><div class="v" style="font-size:20px">0.0018 h</div><div class="d">Desde 43.87 h</div></div>
+    </div>
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="card"><h4><i class="fa-solid fa-keyboard" style="color:var(--green)"></i> Registro automatizado</h4><p>"Registrar OC mediante ERP": la espera residual cae a <b>0.0018 h</b> frente a las 43.87 h del As-Is.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-paper-plane" style="color:var(--green)"></i> Generación en segundos</h4><p>El envío al proveedor pasa a un <b>Delay de UNIF(6,30) segundos</b> en lugar de minutos de gestión manual.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-object-group" style="color:var(--green)"></i> Match automático</h4><p>El emparejamiento cotización ↔ OC se resuelve de forma sistémica e inmediata mediante el módulo Match.</p></div>
+    </div>
+    <div class="callout g"><b>El ERP no solo acelera: estabiliza el sistema.</b> Cierra el <b>100%</b> de las 75 recetas (vs. 60% del As-Is) <b>sin dejar backlog</b>, absorbiendo por completo la demanda real actual de la empresa.</div>
+  </div>
+</section>
+
+<!-- 16 · TO-BE optimista (prueba de estrés) -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-gauge-high"></i> To-Be Optimista</span>
+  <div class="s-title">Prueba de estrés: ¿hasta dónde escala?</div>
+  <div class="s-sub">Misma configuración del Realista, pero un único cambio: <b>Max Arrivals = Infinite</b>. Se retira el techo de 75 recetas para medir la capacidad real del sistema si la demanda deja de ser la variable restrictiva.</div>
+  <div class="s-body">
+    <div class="grid g4" style="margin-bottom:16px">
+      <div class="stat g"><div class="k">OCs procesadas</div><div class="v count" data-count="117">0</div><div class="d">112 comunes + 5 esp.</div></div>
+      <div class="stat g"><div class="k">Tiempo final promedio</div><div class="v count" data-count="21.24" data-dec="2" data-suf=" h">0 h</div><div class="d">≈ 21.41 h del Realista</div></div>
+      <div class="stat g"><div class="k">Utilización Especialista</div><div class="v count" data-count="19.1" data-dec="1" data-suf=" %">0 %</div><div class="d">Lejos de la saturación</div></div>
+      <div class="stat g"><div class="k">Capacidad</div><div class="v" style="font-size:22px">&gt; 2×</div><div class="d">La demanda actual (75)</div></div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="tx"><b>Prueba de estrés controlada.</b> No es un supuesto irreal: como el Realista ya cierra el 100% de las 75 recetas, es válido preguntar qué pasa ante un crecimiento comercial de la cartera.</div></div>
+      <div class="step"><div class="n">2</div><div class="tx"><b>Robustez confirmada.</b> Bajo demanda ilimitada procesa <b>117 OCs</b> en las mismas 480 h, sin que el tiempo de ciclo se deteriore (21.24 h ≈ 21.41 h).</div></div>
+      <div class="step"><div class="n">3</div><div class="tx"><b>Holgura de recurso.</b> El Especialista se mantiene en un saludable <b>19.1%</b>, muy por debajo del punto de saturación.</div></div>
+      <div class="step"><div class="n">4</div><div class="tx"><b>Capacidad latente desbloqueada.</b> La empresa podría cerrar más del doble de su demanda mensual actual <b>sin invertir en personal adicional</b>.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 · COMPARATIVA (TOGGLE) -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-chart-line"></i> Comparativa dinámica</span>
+  <div class="s-title">As-Is vs To-Be Realista vs To-Be Optimista</div>
+  <div class="s-sub">Selecciona un escenario para ver sus KPIs y cómo se posiciona en el gráfico.</div>
+  <div class="s-body">
+    <div class="seg" id="scenToggle" style="margin-bottom:14px">
+      <button data-k="asis" class="active" onclick="setScenario('asis')">As-Is</button>
+      <button data-k="real" onclick="setScenario('real')">To-Be Realista</button>
+      <button data-k="opt" onclick="setScenario('opt')">To-Be Optimista</button>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:18px">
+      <div>
+        <div class="grid g2" style="gap:12px">
+          <div class="stat" id="kpiCiclo"><div class="k">Tiempo de ciclo</div><div class="v">—</div><div class="d">promedio por OC</div></div>
+          <div class="stat" id="kpiThr"><div class="k">OCs cerradas</div><div class="v">—</div><div class="d">en 480 h</div></div>
+          <div class="stat" id="kpiWip"><div class="k">Recetas cerradas</div><div class="v">—</div><div class="d">de las 75 ingresadas</div></div>
+          <div class="stat" id="kpiUtil"><div class="k">Utilización Especialista</div><div class="v">—</div><div class="d">recurso restrictivo</div></div>
+        </div>
+        <div class="callout" id="scenNote" style="margin-top:14px"></div>
+      </div>
+      <div class="chart-box"><h4>Tiempo de ciclo general por escenario (h)</h4><div class="chart-canvas"><canvas id="cmpChart"></canvas></div></div>
+    </div>
+    <table style="margin-top:16px">
+      <thead><tr><th>KPI (480 h de simulación)</th><th style="text-align:right">As-Is</th><th style="text-align:right">To-Be Realista</th><th style="text-align:right">To-Be Optimista</th></tr></thead>
+      <tbody style="font-size:12px">
+        <tr><td>Tiempo de ciclo promedio</td><td class="t-num t-red">170.70 h</td><td class="t-num t-green">21.41 h</td><td class="t-num t-green">21.24 h</td></tr>
+        <tr><td>OCs cerradas</td><td class="t-num t-red">45 / 75</td><td class="t-num t-green">75 / 75</td><td class="t-num t-green">117 (∞)</td></tr>
+        <tr><td>% de recetas cerradas</td><td class="t-num t-red">60%</td><td class="t-num t-green">100%</td><td class="t-num t-green">&gt;100%</td></tr>
+        <tr><td>Utilización del Especialista</td><td class="t-num t-red">99.9%</td><td class="t-num t-green">11.7%</td><td class="t-num t-green">19.1%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 17 · ERP DEMO EN VIVO -->
+<section class="slide">
+  <span class="s-kicker"><i class="fa-solid fa-display"></i> Prototipo funcional</span>
+  <div class="s-title">El ERP en vivo — no solo teoría</div>
+  <div class="s-sub">Prototipo del sistema propuesto (ACL BEST ERP). Interactúa directamente: selecciona un rol y navega los módulos de compras, cotizaciones y órdenes.</div>
+  <div class="s-body" style="display:flex;flex-direction:column">
+    <div class="demo-bar"><span class="demo-dot drd"></span><span class="demo-dot dye"></span><span class="demo-dot dgr"></span> &nbsp;ACL BEST ERP · demo interactivo <a href="erp.html" target="_blank" rel="noopener" style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:#1f6feb;color:#fff;text-decoration:none;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:6px"><i class="fa-solid fa-up-right-from-square"></i> Abrir en pantalla completa</a></div>
+    <iframe class="erp-frame" src="erp.html" style="flex:1;border-radius:0 0 14px 14px" title="ERP Demo"></iframe>
+  </div>
+</section>
+
+<!-- 19 · APORTE DEL CURSO -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-graduation-cap"></i> Aporte del curso</span>
+  <div class="s-title">¿Cómo ayudó la Simulación?</div>
+  <div class="s-sub">Más allá del resultado técnico, el proyecto cambió la forma en que el equipo entiende un proceso empresarial.</div>
+  <div class="s-body">
+    <div class="grid g3" style="margin-bottom:16px">
+      <div class="card"><h4><i class="fa-solid fa-square-root-variable" style="color:var(--navy2)"></i> De la suposición a la validación</h4><p>Antes analizábamos "a simple vista". Dejamos de decir <i>"creemos que esto mejoraría el proceso"</i> para poder afirmar: <b>"esto reduce el tiempo de ciclo en 87.5%, y aquí está la corrida que lo demuestra"</b>.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-people-arrows" style="color:var(--amber)"></i> La dinámica de colas</h4><p>Un proceso no se explica por sus actividades, sino por <b>cómo sus recursos compiten por el tiempo</b>. Vimos cómo un único recurso saturado hace colapsar todo un sistema bien diagramado.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-gauge-high" style="color:var(--green)"></i> Pruebas de estrés sin riesgo</h4><p>Modificando <b>Max Arrivals</b> simulamos años de crecimiento comercial en segundos, probando una hipótesis de mejora <b>antes de arriesgar un solo sol</b> de la empresa.</p></div>
+    </div>
+    <div class="callout b"><b>Rigor con datos imperfectos.</b> Aprendimos a trabajar con la estimación de un experto de la operación cuando no había datos históricos cronometrados, y a ser <b>transparentes con esa limitación</b> en lugar de disfrazarla: una buena decisión de ingeniería no depende de datos perfectos, sino del rigor con los datos que sí se tienen.</div>
+  </div>
+</section>
+
+<!-- 20 · MEJORA -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-lightbulb"></i> Recomendaciones</span>
+  <div class="s-title">Recomendaciones de implementación</div>
+  <div class="s-sub">Tres líneas de acción para materializar la mejora validada en la simulación.</div>
+  <div class="s-body">
+    <div class="grid g3">
+      <div class="card"><h4><i class="fa-solid fa-diagram-project" style="color:var(--navy2)"></i> 1 · Implementar el ERP por fases</h4><p>Priorizar un ERP orientado a los módulos de <b>Compras, Finanzas e Inventario</b>. Comenzar con una <b>prueba piloto en las OC Comunes</b> (mayor volumen, menor complejidad) antes de extenderlo a las OC Específicas.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-user-tie" style="color:var(--amber)"></i> 2 · Redefinir el rol del Especialista</h4><p>Hoy sobrecargado con registro y emparejamiento manual. Reorientar su función hacia actividades de <b>mayor valor</b>: negociación estratégica con proveedores y homologación de nuevas marcas certificadas.</p></div>
+      <div class="card"><h4><i class="fa-solid fa-chart-line" style="color:var(--green)"></i> 3 · Dashboard de KPIs en tiempo real</h4><p>Monitorear de forma continua el <b>Tiempo de Ciclo de las OC</b> y el <b>% de recetas cerradas</b> como KPIs permanentes, para detectar tempranamente cualquier desviación respecto del óptimo del To-Be.</p></div>
+    </div>
+    <div class="callout g" style="margin-top:16px"><b>Oportunidad de mejora del modelo.</b> Una vez implementado el ERP y con registro cronometrado de tiempos, esos datos podrán procesarse en el <b>Input Analyzer</b> (prueba Chi-cuadrado) para refinar las distribuciones asumidas en una futura iteración.</div>
+  </div>
+</section>
+
+<!-- 21 · CONCLUSIONES -->
+<section class="slide fit">
+  <span class="s-kicker"><i class="fa-solid fa-flag-checkered"></i> Conclusiones</span>
+  <div class="s-title">Hallazgos del estudio</div>
+  <div class="s-body">
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="tx"><b>Causa raíz confirmada.</b> El prolongado tiempo de ciclo no se debe a la lentitud de los colaboradores ni a falta de personal, sino a la <b>ausencia de un sistema que automatice</b> el registro, la generación y el emparejamiento documental — lo evidencian de forma convergente el DAP, el Ishikawa, el Pareto y los tres escenarios.</div></div>
+      <div class="step"><div class="n">2</div><div class="tx"><b>As-Is.</b> Ciclo de 170.70 h con 97.8% de espera; el Especialista saturado al 99.9% solo cierra 45 de 75 recetas (60%), acumulando un déficit estructural período tras período.</div></div>
+      <div class="step"><div class="n">3</div><div class="tx"><b>To-Be Realista.</b> El ERP reduce el ciclo a 21.41 h (<b>−87.5%</b>) y cierra el <b>100%</b> de las recetas sin backlog, estabilizando por completo el sistema.</div></div>
+      <div class="step"><div class="n">4</div><div class="tx"><b>To-Be Optimista.</b> Bajo demanda infinita procesa 117 OCs con el ciclo intacto (21.24 h) y el Especialista al 19.1%: la solución <b>desbloquea capacidad latente</b> (&gt;2×) sin personal adicional.</div></div>
+      <div class="step"><div class="n">5</div><div class="tx"><b>De limitación a ventaja competitiva.</b> La solución propuesta no solo es viable: transforma un proceso que hoy limita la capacidad de la empresa en una fuente de competitividad sostenible.</div></div>
+    </div>
+    <div class="callout g" style="margin-top:16px"><b>Conclusión central:</b> el problema no es de capacidad del personal sino de <b>automatización e integración</b> del proceso. La simulación permitió <b>probar la hipótesis de mejora antes de arriesgar recursos reales</b> de la empresa.</div>
+  </div>
+</section>
+
+<!-- 21 · CIERRE -->
+<section class="slide cover">
+  <div class="cover-logo" style="width:64px;height:64px;font-size:28px"><i class="fa-solid fa-check"></i></div>
+  <h1 style="font-size:30px">De 170.70 h a 21.41 h — y del 60% al 100% de recetas cerradas</h1>
+  <div class="lead">Automatizar el registro, la generación y el emparejamiento de las Órdenes de Compra reduce el tiempo de ciclo un 87.5% y desbloquea capacidad para más del doble de la demanda, sin personal adicional.</div>
+  <div class="meta">
+    <span class="pill c-green"><i class="fa-solid fa-clock"></i> −87.5% tiempo de ciclo</span>
+    <span class="pill c-blue"><i class="fa-solid fa-circle-check"></i> 100% de recetas cerradas</span>
+    <span class="pill c-gold"><i class="fa-solid fa-gauge-high"></i> Capacidad &gt;2× (117 OCs)</span>
+  </div>
+  <div style="margin-top:32px;font-size:13px;color:var(--ink3)">ACL BEST COMPANY S.A.C. · Curso de Simulación · Sección 37169 · Grupo 6 · UTP · 2026</div>
+  <div style="margin-top:8px;font-size:13px;color:var(--navy2);font-weight:600">¿Preguntas?</div>
+</section>
+
+</div>
+
+<div class="nav">
+  <div class="nav-l"><div class="nav-logo"><i class="fa-solid fa-bolt"></i></div><div><b style="color:var(--navy)">ACL BEST · Simulación</b> · Grupo 6</div></div>
+  <div class="dots" id="dots"></div>
+  <div class="nav-c">
+    <button class="nav-btn" id="prev" onclick="go(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="nav-count"><span id="cur">1</span> / <span id="tot">22</span></div>
+    <button class="nav-btn" id="next" onclick="go(1)"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let i=0; const N=slides.length;
+// El centrado vertical de slides ligeros se controla con la clase "fit" en cada <section>
+document.getElementById('tot').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,k)=>{const d=document.createElement('div');d.className='dot'+(k===0?' active':'');d.onclick=()=>show(k);dotsWrap.appendChild(d);});
+const dots=[...document.querySelectorAll('.dot')];
+const chartsDone={};
+
+function show(n){
+  n=Math.max(0,Math.min(N-1,n));
+  slides[i].classList.remove('active');dots[i].classList.remove('active');
+  i=n;
+  const sl=slides[i];
+  sl.classList.add('active');dots[i].classList.add('active');
+  document.getElementById('cur').textContent=i+1;
+  document.getElementById('prev').disabled=i===0;
+  document.getElementById('next').disabled=i===N-1;
+  document.getElementById('progress').style.width=((i+1)/N*100)+'%';
+  buildCharts(sl);
+  animateCounters(sl);
+  if(sl.querySelector('#matchSim')) runMatchSim();
+}
+function go(d){show(i+d);}
+document.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input')return;
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(1);}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1);}
+  if(e.key==='Home')show(0); if(e.key==='End')show(N-1);
+});
+document.getElementById('progress').style.width=(1/N*100)+'%';
+document.getElementById('prev').disabled=true;
+
+// ── COUNTERS ──
+function animateCounters(sl){
+  sl.querySelectorAll('.count').forEach(el=>{
+    const target=parseFloat(el.dataset.count);
+    const dec=parseInt(el.dataset.dec||'0');
+    const pre=el.dataset.pre||'';const suf=el.dataset.suf||'';
+    const dur=900,t0=performance.now();
+    function fmt(v){return pre+v.toLocaleString('es-PE',{minimumFractionDigits:dec,maximumFractionDigits:dec})+suf;}
+    function step(t){
+      let p=Math.min(1,(t-t0)/dur);p=1-Math.pow(1-p,3);
+      el.textContent=fmt(target*p);
+      if(p<1)requestAnimationFrame(step);else el.textContent=fmt(target);
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+// ── CHARTS ──
+const NAVY='#00305e',BLUE='#0072ce',RED='#d6293e',GREEN='#1a9e57',GOLD='#f2a900';
+Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+Chart.defaults.font.size=11;Chart.defaults.color='#4a5a6a';
+let cmpChart=null;
+function buildCharts(sl){
+  const pareto=sl.querySelector('#paretoChart');
+  if(pareto && !chartsDone.pareto){chartsDone.pareto=true;
+    new Chart(pareto,{data:{labels:['Registro\nOC','Generación\nOC','Evaluación\ncotiz.','Match','Respuesta\nproveedor','Otras'],
+      datasets:[
+        {type:'bar',label:'Horas de espera',data:[46.93,45.99,38.37,34.77,30.91,7.30],backgroundColor:RED,borderRadius:5,yAxisID:'y',order:2},
+        {type:'line',label:'% acumulado',data:[23.0,45.5,64.3,81.3,96.4,100],borderColor:NAVY,backgroundColor:NAVY,tension:.3,yAxisID:'y1',order:1,pointRadius:3}
+      ]},
+      options:{maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12}}},
+        scales:{y:{title:{display:true,text:'Horas'},beginAtZero:true},
+          y1:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},title:{display:true,text:'% acum.'},ticks:{callback:v=>v+'%'}}}}});
+  }
+  const cmp=sl.querySelector('#cmpChart');
+  if(cmp && !chartsDone.cmp){chartsDone.cmp=true;
+    cmpChart=new Chart(cmp,{type:'bar',data:{labels:['As-Is','Realista','Optimista'],datasets:[{data:[170.70,21.41,21.24],backgroundColor:[RED,GREEN,GREEN],borderRadius:6}]},
+      options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'horas'}}}}});
+    setScenario('asis');
+  }
+}
+
+// ── SCENARIO TOGGLE ──
+const SCEN={
+  asis:{ciclo:'170.70 h',thr:'45 / 75',wip:'60%',util:'99.9%',cls:'r',note:'<b>As-Is.</b> El Especialista está saturado (99.9%): solo cierra 45 de 75 recetas (60%) y el 40% queda como backlog. El sistema no drena ni la demanda actual.',hi:0,color:RED},
+  real:{ciclo:'21.41 h',thr:'75 / 75',wip:'100%',util:'11.7%',cls:'g',note:'<b>To-Be Realista.</b> El ERP automatiza registro, generación y match: −87.5% de tiempo, 100% de recetas cerradas y utilización del Especialista al 11.7%, sin backlog.',hi:1,color:GREEN},
+  opt:{ciclo:'21.24 h',thr:'117 (∞)',wip:'>100%',util:'19.1%',cls:'g',note:'<b>To-Be Optimista (prueba de estrés).</b> Con demanda infinita procesa 117 OCs sin deteriorar el ciclo (21.24 h) y con el Especialista al 19.1%: más del doble de la capacidad actual.',hi:2,color:GREEN}
+};
+function setScenario(k){
+  const s=SCEN[k];
+  document.querySelectorAll('#scenToggle button').forEach(b=>b.classList.toggle('active',b.dataset.k===k));
+  const set=(id,val,cls)=>{const c=document.getElementById(id);if(!c)return;c.className='stat '+cls;c.querySelector('.v').textContent=val;};
+  set('kpiCiclo',s.ciclo,s.cls);set('kpiThr',s.thr,s.cls);set('kpiWip',s.wip,s.cls);set('kpiUtil',s.util,s.cls);
+  const note=document.getElementById('scenNote');if(note){note.className='callout '+ (s.cls==='r'?'r':s.cls==='g'?'g':'');note.innerHTML=s.note;}
+  if(cmpChart){cmpChart.data.datasets[0].backgroundColor=['asis','real','opt'].map((kk,idx)=>idx===s.hi?SCEN[kk].color:SCEN[kk].color+'40');cmpChart.update();}
+}
+
+
+// ── MATCH ANIMATION ──
+let matchTimer=null;
+function runMatchSim(){
+  const sim=document.getElementById('matchSim');if(!sim)return;
+  sim.querySelectorAll('.ent,.mout').forEach(e=>e.remove());
+  if(matchTimer)clearInterval(matchTimer);
+  const tracks=sim.querySelectorAll('.track');
+  const docTrack=tracks[0], boxTrack=tracks[1];
+  const cntEl=document.getElementById('matchCount');let matched=0;cntEl.textContent='0';
+  let step=0;
+  function spawn(track,cls,txt,startLeft,stopLeft,delay){
+    const e=document.createElement('div');e.className='ent '+cls;e.textContent=txt;e.style.left=startLeft+'px';e.style.opacity='0';
+    track.appendChild(e);
+    setTimeout(()=>{e.style.transition='left 1.1s ease, opacity .3s';e.style.opacity='1';e.style.left=stopLeft+'px';},delay);
+    return e;
+  }
+  matchTimer=setInterval(()=>{
+    const w=sim.clientWidth;const gate=w-96-40;
+    // documental piles up short of gate (stuck); physical reaches gate then waits
+    const docStop=120+ (step%5)*26;                 // OC stuck far from gate (bandejas)
+    const boxStop=gate-4-(step%6)*24;               // material waiting at dock
+    spawn(docTrack,'doc','OC',10,Math.min(docStop,gate-160),0);
+    spawn(boxTrack,'box','■',10,boxStop,120);
+    // occasionally one pair gets matched and released
+    if(matched<45){
+      matched++;cntEl.textContent=matched;
+      const out=document.createElement('div');out.className='mout';out.textContent='✓';out.style.left=(gate+6)+'px';out.style.opacity='0';
+      boxTrack.appendChild(out);
+      setTimeout(()=>{out.style.transition='left 1s ease, opacity .3s';out.style.opacity='1';out.style.left=(sim.clientWidth-30)+'px';},200);
+      setTimeout(()=>out.remove(),1400);
+    }
+    // cleanup old entities
+    const all=sim.querySelectorAll('.ent');
+    if(all.length>26){for(let j=0;j<6;j++)all[j].remove();}
+    step++;
+    if(step>50){clearInterval(matchTimer);}
+  },700);
+}
+
+buildCharts(slides[0]);
+animateCounters(slides[0]);
+</script>
+</body>
+</html>
