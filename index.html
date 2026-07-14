@@ -248,7 +248,7 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
 <section class="slide">
   <span class="s-kicker"><i class="fa-solid fa-building"></i> Datos de la empresa</span>
   <div class="s-title">Ficha de ACL BEST COMPANY S.A.C.</div>
-  <div class="s-sub">Empresa privada peruana constituida en <b>2019</b>, del sector metalmecánico y de manufactura eléctrica. Diseña, fabrica e integra <b>tableros eléctricos de baja (BT) y media tensión (MT)</b> bajo modelo <b>make-to-order</b> y filosofía Just-In-Time.</div>
+  <div class="s-sub">Empresa privada peruana constituida en <b>2019</b>, del sector metalmecánico y de manufactura eléctrica. Diseña, fabrica e integra <b>tableros eléctricos de baja (BT) y media tensión (MT)</b> bajo modelo <b>make-to-order</b>.</div>
   <div class="s-body">
     <div class="grid" style="grid-template-columns:1.15fr .85fr;gap:18px">
       <div>
@@ -312,7 +312,7 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
       <div class="callout r"><b>No es lentitud, es capacidad.</b> El proceso no logra drenar ni siquiera la demanda actual: acumula un déficit estructural período tras período, con el Especialista de Compras operando de forma sostenida cerca de su límite.</div>
       <div class="card">
         <h4><i class="fa-solid fa-magnifying-glass-chart"></i> Formulación del problema</h4>
-        <p>¿De qué manera el modelado y simulación en <b>Arena</b> del ciclo de compras, y su rediseño mediante un escenario <b>To-Be con ERP</b>, permitirán reducir significativamente el tiempo de ciclo de las Órdenes de Compra y elevar la capacidad operativa de la organización?</p>
+        <p>¿De qué manera el modelado y simulación en <b>Arena</b> del ciclo de compras, y su rediseño mediante un escenario <b>To-Be</b>, permitirán reducir significativamente el tiempo de ciclo de las Órdenes de Compra y elevar la capacidad operativa de la organización?</p>
       </div>
     </div>
   </div>
@@ -539,32 +539,45 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
 <section class="slide">
   <span class="s-kicker"><i class="fa-solid fa-clipboard-list"></i> DAP · Línea base</span>
   <div class="s-title">Diagrama de Análisis de Procesos (DAP)</div>
-  <div class="s-sub">Las 19 actividades del ciclo clasificadas en operación ◯, transporte ⇨, espera D, inspección ◇ y almacenamiento △. El cursograma revela que el tiempo está dominado por la espera.</div>
+  <div class="s-sub">Cursograma analítico completo de las <b>19 actividades</b> del ciclo, clasificadas en operación ◯, transporte ⇨, espera D, inspección □ y almacenamiento △, con su tiempo en minutos. Revela que el tiempo está dominado por la espera.</div>
   <div class="s-body">
-    <div class="grid" style="grid-template-columns:1.35fr 1fr;gap:18px">
+    <style>#dapTable td{padding:3.5px 9px}#dapTable th{padding:6px 9px}#dapTable tbody{font-size:10.6px}</style>
+    <div class="grid" style="grid-template-columns:1.55fr 1fr;gap:18px">
       <div>
-      <table>
-        <thead><tr><th>#</th><th>Actividad</th><th>Símb.</th><th style="text-align:right">Tiempo (h)</th><th>Pareto</th></tr></thead>
-        <tbody style="font-size:11.5px">
-          <tr style="background:#fdeaec"><td>12</td><td>Espera en cola del Especialista (registro OC)</td><td class="sym">D</td><td class="t-num t-red">46.93</td><td class="t-red">#1</td></tr>
-          <tr style="background:#fdeaec"><td>14</td><td>Espera en cola del Especialista (generación OC)</td><td class="sym">D</td><td class="t-num t-red">45.99</td><td class="t-red">#2</td></tr>
-          <tr style="background:#fdeaec"><td>6</td><td>Espera en cola del Especialista (evaluación)</td><td class="sym">D</td><td class="t-num t-red">38.37</td><td class="t-red">#3</td></tr>
-          <tr style="background:#fdeaec"><td>15</td><td>Emparejamiento (Match) OC ↔ cotización</td><td class="sym">D</td><td class="t-num t-red">34.77</td><td class="t-red">#4</td></tr>
-          <tr style="background:#fdeaec"><td>4</td><td>Espera de respuesta del proveedor</td><td class="sym">D</td><td class="t-num t-red">30.91</td><td class="t-red">#5</td></tr>
-          <tr><td>11</td><td>Registrar Orden de Compra</td><td class="sym">◯</td><td class="t-num">2.05</td><td class="tag-va">VA</td></tr>
-          <tr><td>16</td><td>Recepcionar y verificar vs. guía</td><td class="sym">◇</td><td class="t-num">0.86</td><td>—</td></tr>
-          <tr><td>18</td><td>Ingresar producto a inventario</td><td class="sym">△</td><td class="t-num">0.35</td><td>—</td></tr>
-          <tr><td>3</td><td>Solicitar cotización a proveedor</td><td class="sym">◯</td><td class="t-num">0.24</td><td class="tag-va">VA</td></tr>
+      <table id="dapTable">
+        <thead><tr><th>#</th><th>Actividad</th><th>Símb.</th><th style="text-align:right">T (min)</th><th>Clasif.</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Recepción de receta de producción</td><td class="sym">◯</td><td class="t-num">0.0</td><td class="tag-va">VA</td></tr>
+          <tr><td>2</td><td>Decidir tipo de receta (Común 95% / Específica 5%)</td><td class="sym">◯</td><td class="t-num">0.0</td><td class="tag-va">VA</td></tr>
+          <tr><td>3</td><td>Solicitar cotización a proveedor</td><td class="sym">◯</td><td class="t-num">14.4</td><td class="tag-va">VA</td></tr>
+          <tr style="background:#fdeaec"><td>4</td><td>Espera de respuesta del proveedor</td><td class="sym">D</td><td class="t-num t-red">1,854.6</td><td class="t-red">#5</td></tr>
+          <tr><td>5</td><td>Recepcionar y evaluar cotización</td><td class="sym">◯</td><td class="t-num">15.0</td><td class="tag-va">VA</td></tr>
+          <tr style="background:#fdeaec"><td>6</td><td>Espera en cola del Especialista (evaluación)</td><td class="sym">D</td><td class="t-num t-red">2,302.2</td><td class="t-red">#3</td></tr>
+          <tr><td>7</td><td>Decidir: ¿cotización aceptada? (90% sí / 10% no)</td><td class="sym">◯</td><td class="t-num">0.0</td><td class="tag-va">VA</td></tr>
+          <tr><td>8</td><td>Enviar cotización a Finanzas</td><td class="sym">⇨</td><td class="t-num">0.5</td><td>—</td></tr>
+          <tr><td>9</td><td>Enviar propuesta a Finanzas</td><td class="sym">⇨</td><td class="t-num">37.2</td><td>—</td></tr>
+          <tr><td>10</td><td>Espera de aprobación de Finanzas</td><td class="sym">D</td><td class="t-num">171.6</td><td>—</td></tr>
+          <tr><td>11</td><td>Registrar Orden de Compra</td><td class="sym">◯</td><td class="t-num">123.0</td><td class="tag-va">VA</td></tr>
+          <tr style="background:#fdeaec"><td>12</td><td>Espera en cola del Especialista (registro OC)</td><td class="sym">D</td><td class="t-num t-red">2,815.8</td><td class="t-red">#1</td></tr>
+          <tr><td>13</td><td>Generar OC hacia el proveedor</td><td class="sym">⇨</td><td class="t-num">1.8</td><td>—</td></tr>
+          <tr style="background:#fdeaec"><td>14</td><td>Espera en cola del Especialista (generación OC)</td><td class="sym">D</td><td class="t-num t-red">2,759.4</td><td class="t-red">#2</td></tr>
+          <tr style="background:#fdeaec"><td>15</td><td>Emparejar (Match) OC con cotización aceptada</td><td class="sym">D</td><td class="t-num t-red">2,086.2</td><td class="t-red">#4</td></tr>
+          <tr><td>16</td><td>Recepcionar y verificar producto vs. guía de remisión</td><td class="sym">◯</td><td class="t-num">51.6</td><td class="tag-va">VA</td></tr>
+          <tr><td>17</td><td>Decidir: ¿cantidad conforme con guía?</td><td class="sym">◯</td><td class="t-num">0.0</td><td class="tag-va">VA</td></tr>
+          <tr><td>18</td><td>Ingresar producto a inventario</td><td class="sym">△</td><td class="t-num">21.0</td><td>—</td></tr>
+          <tr><td>19</td><td>Espera previa al almacenamiento</td><td class="sym">D</td><td class="t-num">1.8</td><td>—</td></tr>
+          <tr style="background:#eef4fb;font-weight:700"><td colspan="3" class="t-navy">TOTAL</td><td class="t-num t-navy">12,256.1</td><td>—</td></tr>
         </tbody>
       </table>
-      <p class="mini" style="margin-top:6px">7 operaciones · 3 transportes · 7 esperas · 1 inspección · 1 almacenamiento.</p>
+      <p class="mini" style="margin-top:6px">Resumen: 8 operaciones · 3 transportes · 7 esperas · 1 almacenamiento = 19 actividades.</p>
       </div>
       <div>
         <div class="stat r" style="margin-bottom:12px"><div class="k">Tiempo total del ciclo</div><div class="v count" data-count="204.27" data-dec="2" data-suf=" h">0 h</div><div class="d">12,256.1 minutos</div></div>
         <div class="grid g2" style="gap:12px;margin-bottom:12px">
-          <div class="stat g"><div class="k">Valor Agregado (7 op.)</div><div class="v" style="font-size:22px">1.24 %</div><div class="d">152.4 min</div></div>
+          <div class="stat g"><div class="k">Valor Agregado (8 op.)</div><div class="v" style="font-size:22px">1.66 %</div><div class="d">204.0 min</div></div>
           <div class="stat r"><div class="k">Esperas (7)</div><div class="v" style="font-size:22px">97.8 %</div><div class="d">11,991.6 min</div></div>
         </div>
+        <div class="callout r" style="margin-bottom:12px"><b>Cinco puntos críticos de espera</b> (#1 a #5) concentran la demora: registro (46.93 h), generación (45.99 h), evaluación (38.37 h), Match (34.77 h) y respuesta del proveedor (30.91 h). Los tres primeros comparten un mismo recurso: el Especialista.</div>
         <div class="callout r"><b>El problema no es de eficiencia en la tarea, sino de disponibilidad de recursos.</b> El DAP (204.27 h de una OC puntual) y el promedio de Arena (170.70 h, con variabilidad) apuntan a lo mismo: el ciclo está dominado por la <b>espera</b>, no por el trabajo efectivo.</div>
       </div>
     </div>
@@ -665,14 +678,13 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
 <section class="slide fit">
   <span class="s-kicker"><i class="fa-solid fa-coins"></i> Impacto económico</span>
   <div class="s-title">Impacto económico de las ineficiencias</div>
-  <div class="s-sub">Un tiempo de ciclo cercano a <b>170 h</b> (con picos sobre 290 h) genera un impacto económico multidimensional sobre la MYPE. El costo se valoriza mediante <b>Costeo ABC</b>, desarrollado de forma externa al software de simulación.</div>
+  <div class="s-sub">Un tiempo de ciclo cercano a <b>170 h</b> (con picos sobre 290 h) genera un impacto económico multidimensional sobre la MYPE.</div>
   <div class="s-body">
     <div class="grid g3" style="margin-bottom:16px">
       <div class="card"><h4><i class="fa-solid fa-money-bill-transfer" style="color:var(--amber)"></i> Capital de trabajo inmovilizado</h4><p>Existen compromisos financieros (órdenes emitidas, aprobaciones, adelantos a proveedores) sin que el material físico haya ingresado aún a producción, afectando el <b>flujo de caja</b> de una pequeña empresa.</p></div>
       <div class="card"><h4><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i> Punto único de falla</h4><p>El Especialista opera cerca de su límite de capacidad, concentrando las actividades críticas. Esto genera <b>riesgo de errores por sobrecarga</b> e interrupciones de toda la cadena ante su ausencia.</p></div>
       <div class="card"><h4><i class="fa-solid fa-gavel" style="color:var(--navy2)"></i> Penalidades y reputación</h4><p>El incumplimiento de plazos en proyectos de <b>sector público y salud</b> expone a penalidades contractuales, pérdida de reputación y riesgo de perder la <b>homologación</b> como integrador certificado.</p></div>
     </div>
-    <div class="callout b"><b>Método ABC.</b> Las salidas del modelo Arena (utilización de recursos, número de OC procesadas, tiempo de espera por actividad) se emplean como <b>drivers de costo</b> para asignar el gasto a cada actividad del ciclo, en lugar de una tarifa horaria genérica dentro del simulador.</div>
   </div>
 </section>
 
