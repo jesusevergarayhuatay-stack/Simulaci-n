@@ -651,24 +651,23 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
 <section class="slide">
   <span class="s-kicker"><i class="fa-solid fa-chart-column"></i> Análisis de causa raíz</span>
   <div class="s-title">Diagrama de Pareto — priorización de causas</div>
-  <div class="s-sub">Sobre el tiempo total del ciclo (204.27 h): <b>5 actividades</b> concentran más del 80% de la demora acumulada, validando el principio 80/20.</div>
+  <div class="s-sub">Priorización de las causas de demora en el escenario <b>As-Is (Arena)</b>, según el <b>tiempo de espera promedio</b> por actividad. Cinco actividades explican el 100% de la demora priorizada y las <b>cuatro primeras superan el 80%</b>, validando el principio 80/20.</div>
   <div class="s-body">
     <div class="grid" style="grid-template-columns:1.5fr 1fr;gap:18px;height:100%">
-      <div class="chart-box"><h4>Tiempo de espera por actividad (h) y % acumulado</h4><div class="chart-canvas"><canvas id="paretoChart"></canvas></div></div>
+      <div class="chart-box"><h4>Tiempo de espera promedio por actividad (h) y % acumulado</h4><div class="chart-canvas"><canvas id="paretoChart"></canvas></div></div>
       <div>
-        <div class="callout b" style="margin-bottom:14px"><b>Hallazgo 80/20.</b> Las <b>4 primeras causas superan el 81%</b> del ciclo; las 5 llegan al 96%. Las tres mayores (registro, generación y evaluación) comparten una misma raíz: la <b>contención sobre un único recurso, el Especialista</b>.</div>
+        <div class="callout b" style="margin-bottom:14px"><b>Hallazgo 80/20.</b> Las <b>dos mayores</b> (generar y registrar la OC) ya suman el <b>46%</b>, y las <b>cuatro primeras alcanzan el 84%</b> de la demora priorizada. Todas se concentran en la gestión documental manual de la OC sobre un mismo recurso, el <b>Especialista</b>.</div>
         <table>
           <thead><tr><th>Actividad</th><th style="text-align:right">h</th><th style="text-align:right">% acum.</th></tr></thead>
           <tbody style="font-size:11.5px">
-            <tr><td>Registro de la OC</td><td class="t-num t-red">46.93</td><td class="t-num">23.0%</td></tr>
-            <tr><td>Generación de la OC</td><td class="t-num t-red">45.99</td><td class="t-num">45.5%</td></tr>
-            <tr><td>Evaluación de cotización</td><td class="t-num t-red">38.37</td><td class="t-num">64.3%</td></tr>
-            <tr><td>Emparejamiento (Match)</td><td class="t-num t-red">34.77</td><td class="t-num">81.3%</td></tr>
-            <tr><td>Respuesta del proveedor</td><td class="t-num">30.91</td><td class="t-num">96.4%</td></tr>
-            <tr><td>Otras (14)</td><td class="t-num">7.30</td><td class="t-num">100%</td></tr>
+            <tr><td>Generar OC a Proveedor</td><td class="t-num t-red">45.98</td><td class="t-num">24%</td></tr>
+            <tr><td>Registrar Orden de Compra</td><td class="t-num t-red">43.87</td><td class="t-num">46%</td></tr>
+            <tr><td>Recepcionar y Evaluar Cotización</td><td class="t-num t-red">38.03</td><td class="t-num">66%</td></tr>
+            <tr><td>Emparejar OC con Cotización Común</td><td class="t-num t-red">34.77</td><td class="t-num">84%</td></tr>
+            <tr><td>Solicitar Cotizaciones</td><td class="t-num">30.58</td><td class="t-num">100%</td></tr>
           </tbody>
         </table>
-        <p class="mini" style="margin-top:8px">→ Registro, generación y emparejamiento son <b>manuales</b>: confirman la causa raíz del Ishikawa (falta de un sistema integrado).</p>
+        <p class="mini" style="margin-top:8px">Total priorizado: <b>193.23 h</b> de espera promedio. → Generar, registrar, evaluar y emparejar la OC son actividades <b>manuales</b>: confirman la causa raíz del Ishikawa (ausencia de un sistema integrado).</p>
       </div>
     </div>
   </div>
@@ -970,14 +969,15 @@ let cmpChart=null;
 function buildCharts(sl){
   const pareto=sl.querySelector('#paretoChart');
   if(pareto && !chartsDone.pareto){chartsDone.pareto=true;
-    new Chart(pareto,{data:{labels:['Registro\nOC','Generación\nOC','Evaluación\ncotiz.','Match','Respuesta\nproveedor','Otras'],
+    new Chart(pareto,{data:{labels:[['Generar OC','a Proveedor'],['Registrar Orden','de Compra'],['Recepcionar y','Evaluar Cotización'],['Emparejar OC con','Cotización Común'],['Solicitar','Cotizaciones']],
       datasets:[
-        {type:'bar',label:'Horas de espera',data:[46.93,45.99,38.37,34.77,30.91,7.30],backgroundColor:RED,borderRadius:5,yAxisID:'y',order:2},
-        {type:'line',label:'% acumulado',data:[23.0,45.5,64.3,81.3,96.4,100],borderColor:NAVY,backgroundColor:NAVY,tension:.3,yAxisID:'y1',order:1,pointRadius:3}
+        {type:'bar',label:'Tiempo de espera prom. (h)',data:[45.98,43.87,38.03,34.77,30.58],backgroundColor:'#2e7d9a',borderRadius:4,yAxisID:'y',order:3},
+        {type:'line',label:'% acumulado',data:[24,46,66,84,100],borderColor:'#e8820e',backgroundColor:'#e8820e',tension:0,yAxisID:'y1',order:1,pointRadius:4,borderWidth:3},
+        {type:'line',label:'Umbral 80%',data:[80,80,80,80,80],borderColor:'#9aa7b4',borderDash:[6,5],borderWidth:1.5,pointRadius:0,yAxisID:'y1',order:2,fill:false}
       ]},
       options:{maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12}}},
-        scales:{y:{title:{display:true,text:'Horas'},beginAtZero:true},
-          y1:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},title:{display:true,text:'% acum.'},ticks:{callback:v=>v+'%'}}}}});
+        scales:{y:{title:{display:true,text:'Tiempo de espera promedio (horas)'},beginAtZero:true},
+          y1:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},title:{display:true,text:'% Acumulado'},ticks:{callback:v=>v+'%'}}}}});
   }
   const cmp=sl.querySelector('#cmpChart');
   if(cmp && !chartsDone.cmp){chartsDone.cmp=true;
