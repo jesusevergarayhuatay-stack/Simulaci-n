@@ -284,7 +284,7 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
 <!-- 3 · CARTERA DE PROYECTOS -->
 <section class="slide fit">
   <span class="s-kicker"><i class="fa-solid fa-briefcase"></i> Cartera de proyectos</span>
-  <div class="s-title">Proyectos en ejecución · Ene–Mar 2026</div>
+  <div class="s-title">Proyectos en ejecución · Ene–Mrz 2026</div>
   <div class="s-sub"><b>80 tableros eléctricos distintos</b> en ejecución simultánea (oct-2025 a feb-2026) para sectores altamente sensibles. Este volumen real sustenta las <b>75 recetas</b> usadas como carga del modelo de simulación.</div>
   <div class="s-body">
     <div class="grid g3" style="margin-bottom:14px">
@@ -562,19 +562,19 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
           <tr><td>13</td><td>Generar OC hacia el proveedor</td><td class="sym">⇨</td><td class="t-num">1.8</td><td>—</td></tr>
           <tr style="background:#fdeaec"><td>14</td><td>Espera en cola del Especialista (generación OC)</td><td class="sym">D</td><td class="t-num t-red">2,759.4</td><td class="t-red">#2</td></tr>
           <tr style="background:#fdeaec"><td>15</td><td>Emparejar (Match) OC con cotización aceptada</td><td class="sym">D</td><td class="t-num t-red">2,086.2</td><td class="t-red">#4</td></tr>
-          <tr><td>16</td><td>Recepcionar y verificar producto vs. guía de remisión</td><td class="sym">◯</td><td class="t-num">51.6</td><td class="tag-va">VA</td></tr>
+          <tr><td>16</td><td>Recepcionar y verificar producto vs. guía de remisión</td><td class="sym">□</td><td class="t-num">51.6</td><td>—</td></tr>
           <tr><td>17</td><td>Decidir: ¿cantidad conforme con guía?</td><td class="sym">◯</td><td class="t-num">0.0</td><td class="tag-va">VA</td></tr>
           <tr><td>18</td><td>Ingresar producto a inventario</td><td class="sym">△</td><td class="t-num">21.0</td><td>—</td></tr>
           <tr><td>19</td><td>Espera previa al almacenamiento</td><td class="sym">D</td><td class="t-num">1.8</td><td>—</td></tr>
           <tr style="background:#eef4fb;font-weight:700"><td colspan="3" class="t-navy">TOTAL</td><td class="t-num t-navy">12,256.1</td><td>—</td></tr>
         </tbody>
       </table>
-      <p class="mini" style="margin-top:6px">Resumen: 8 operaciones · 3 transportes · 7 esperas · 1 almacenamiento = 19 actividades.</p>
+      <p class="mini" style="margin-top:6px">Resumen: 7 operaciones · 3 transportes · 7 esperas · 1 inspección · 1 almacenamiento = 19 actividades.</p>
       </div>
       <div>
         <div class="stat r" style="margin-bottom:12px"><div class="k">Tiempo total del ciclo</div><div class="v count" data-count="204.27" data-dec="2" data-suf=" h">0 h</div><div class="d">12,256.1 minutos</div></div>
         <div class="grid g2" style="gap:12px;margin-bottom:12px">
-          <div class="stat g"><div class="k">Valor Agregado (8 op.)</div><div class="v" style="font-size:22px">1.66 %</div><div class="d">204.0 min</div></div>
+          <div class="stat g"><div class="k">Valor Agregado (7 op.)</div><div class="v" style="font-size:22px">1.24 %</div><div class="d">152.4 min</div></div>
           <div class="stat r"><div class="k">Esperas (7)</div><div class="v" style="font-size:22px">97.8 %</div><div class="d">11,991.6 min</div></div>
         </div>
         <div class="callout r" style="margin-bottom:12px"><b>Cinco puntos críticos de espera</b> (#1 a #5) concentran la demora: registro (46.93 h), generación (45.99 h), evaluación (38.37 h), Match (34.77 h) y respuesta del proveedor (30.91 h). Los tres primeros comparten un mismo recurso: el Especialista.</div>
@@ -693,28 +693,18 @@ input[type=range]{width:100%;accent-color:var(--navy2);height:5px}
   <div class="s-title">Configuración del modelo</div>
   <div class="s-sub">Horizonte de <b>480 h</b> (20 días de 24 h), igual en los tres escenarios para que sean comparables. Carga de <b>75 recetas</b> a intervalo constante, con relación <b>1:1</b> receta → Orden de Compra.</div>
   <div class="s-body">
-    <div class="grid" style="grid-template-columns:1fr .82fr;gap:18px">
-      <div>
-        <div class="grid" style="gap:12px">
-          <div class="card"><h4 style="color:var(--navy2)"><i class="fa-solid fa-diagram-next"></i> Entrada y clasificación</h4>
-            <ul><li><b>Create:</b> 75 recetas (Max Arrivals = 75)</li><li><b>Decide "¿receta común?":</b> 95% común · 5% específica</li><li><b>Assign:</b> tipo de entidad y prioridad</li></ul></div>
-          <div class="card"><h4 style="color:var(--amber)"><i class="fa-solid fa-users-gear"></i> Recursos y tiempos</h4>
-            <ul><li><b>4 recursos</b> (cap. 1): Recepcionista, Contador, Especialista, Operario de Inventario · <b>+ Asistente Operario solo en As-Is</b></li><li>Distribuciones <b>Uniformes</b> por juicio experto (ej. proveedor común UNIF(2,30) min; específico UNIF(2,24) h)</li><li><b>Decide cotización:</b> 90% aceptada / 10% rechazada</li></ul></div>
-          <div class="card"><h4 style="color:var(--green)"><i class="fa-solid fa-object-group"></i> Emparejamiento y salida</h4>
-            <ul><li><b>Match:</b> empareja OC ↔ cotización aceptada</li><li>Verificación vs. guía → ingreso a inventario → <b>Dispose</b></li><li>Costos = 0 en Arena (<b>costeo ABC externo</b>); sin turnos ni failures</li></ul></div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="imgslot" style="flex:1">
-          <img src="arena_modelo.png" alt="Modelo en Arena" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="imgph" style="display:flex">
-            <i class="fa-solid fa-diagram-project"></i>
-            <b>Captura de tu modelo en Arena</b>
-            <span>Guarda un screenshot como <code>arena_modelo.png</code> en esta carpeta y se mostrará aquí. Ideal: la vista completa del modelo con los módulos Create → Match → Dispose.</span>
-          </div>
-        </div>
-        <div class="callout b" style="font-size:12.5px"><b>Las 75 recetas no son arbitrarias:</b> reflejan el cronograma real de producción (≈80 tableros en ejecución), un supuesto conservador y representativo.</div>
-      </div>
+    <div class="grid g3" style="gap:16px;margin-bottom:14px">
+      <div class="card"><h4 style="color:var(--navy2)"><i class="fa-solid fa-diagram-next"></i> Entrada y clasificación</h4>
+        <ul><li><b>Create:</b> 75 recetas (Max Arrivals = 75)</li><li><b>Decide "¿receta común?":</b> 95% común · 5% específica</li><li><b>Assign:</b> tipo de entidad y prioridad</li></ul></div>
+      <div class="card"><h4 style="color:var(--amber)"><i class="fa-solid fa-users-gear"></i> Recursos y tiempos</h4>
+        <ul><li><b>4 recursos</b> (cap. 1): Recepcionista, Contador, Especialista, Operario de Inventario · <b>+ Asistente Operario solo en As-Is</b></li><li>Distribuciones <b>Uniformes</b> por juicio experto (ej. proveedor común UNIF(2,30) min; específico UNIF(2,24) h)</li><li><b>Decide cotización:</b> 90% aceptada / 10% rechazada</li></ul></div>
+      <div class="card"><h4 style="color:var(--green)"><i class="fa-solid fa-object-group"></i> Emparejamiento y salida</h4>
+        <ul><li><b>Match:</b> empareja OC ↔ cotización aceptada</li><li>Verificación vs. guía → ingreso a inventario → <b>Dispose</b></li><li>Costos = 0 en Arena (<b>costeo ABC externo</b>); sin turnos ni failures</li></ul></div>
+    </div>
+    <div class="grid g2" style="gap:16px">
+      <div class="card" style="background:var(--sky);border-color:var(--sky2)"><h4 style="color:var(--navy2)"><i class="fa-solid fa-flask-vial"></i> Escenarios simulados</h4>
+        <ul><li><b>As-Is:</b> proceso actual con el Asistente Operario y las tres tareas manuales de la OC.</li><li><b>To-Be Realista:</b> ERP automatiza registro, generación y emparejamiento de la OC.</li><li><b>To-Be Optimista:</b> mismo modelo con <b>Max Arrivals = Infinite</b> (prueba de estrés).</li></ul></div>
+      <div class="callout b"><b>Las 75 recetas no son arbitrarias:</b> reflejan el cronograma real de producción (≈80 tableros en ejecución), un supuesto conservador y representativo que hace comparables los tres escenarios sobre las mismas 480 h.</div>
     </div>
   </div>
 </section>
